@@ -47,7 +47,7 @@ if [[ ! -f "$ORCHESTRATION_FILE" ]]; then
 fi
 
 # Detect all OpenClaw workspaces
-ALL_WORKSPACES=($(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null))
+mapfile -t ALL_WORKSPACES < <(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null)
 
 if [[ ${#ALL_WORKSPACES[@]} -eq 0 ]]; then
   echo "Error: No OpenClaw workspace found under $HOME"

@@ -24,7 +24,7 @@ done
 SENTINEL="<!-- SentiCore Installed -->"
 
 # Detect all OpenClaw workspaces
-ALL_WORKSPACES=($(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null))
+mapfile -t ALL_WORKSPACES < <(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null)
 
 if [[ ${#ALL_WORKSPACES[@]} -eq 0 ]]; then
   echo "Error: No OpenClaw workspace found under $HOME"
@@ -94,15 +94,17 @@ remove_from() {
       REMOVED=1
     fi
   done
-  [[ $REMOVED -eq 0 ]] && echo "  ✓ No skill files found, skipped"
+  if [[ $REMOVED -eq 0 ]]; then
+    echo "  ✓ No skill files found, skipped"
+  fi
 
   # Remove orchestration prompt block from SOUL.md
   if [[ -f "$SOUL_FILE" ]]; then
     if grep -qF "$SENTINEL" "$SOUL_FILE"; then
       # Remove from sentinel line to end of file
       sed -i '' "/$(echo "$SENTINEL" | sed 's/[\/&]/\\&/g')/,\$d" "$SOUL_FILE"
-      # Clean up trailing blank lines
-      sed -i '' -e 's/[[:space:]]*$//' "$SOUL_FILE"
+      # Clean up trailing blank lines at end of file
+      sed -i '' -e '/^[[:space:]]*$/{$d;}' "$SOUL_FILE"
       echo "  ✓ Orchestration prompt removed from SOUL.md"
     else
       echo "  ✓ SentiCore not found in SOUL.md, skipped"
