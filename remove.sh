@@ -21,8 +21,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-SENTINEL="<!-- SentiCore Installed -->"
-
 # Detect all OpenClaw workspaces
 ALL_WORKSPACES=()
 while IFS= read -r line; do
@@ -82,7 +80,7 @@ fi
 remove_from() {
   local WORKSPACE="$1"
   local SKILLS_DIR="$WORKSPACE/skills"
-  local SOUL_FILE="$WORKSPACE/SOUL.md"
+  local TOOLS_FILE="$WORKSPACE/TOOLS.md"
   local AGENT_NAME
   AGENT_NAME=$(basename "$(dirname "$WORKSPACE")" | sed 's/^\.openclaw-//')
 
@@ -101,19 +99,17 @@ remove_from() {
     echo "  ✓ No skill files found, skipped"
   fi
 
-  # Remove orchestration prompt block from SOUL.md
-  if [[ -f "$SOUL_FILE" ]]; then
-    if grep -q "SentiCore Installed" "$SOUL_FILE"; then
-      # Read original line count stored in sentinel
-      ORIG_LINES=$(grep -o 'lines=[0-9]*' "$SOUL_FILE" | grep -o '[0-9]*')
-      # Truncate back to original line count
-      head -n "$ORIG_LINES" "$SOUL_FILE" > /tmp/senticore_soul_tmp && mv /tmp/senticore_soul_tmp "$SOUL_FILE"
-      echo "  ✓ Orchestration prompt removed from SOUL.md"
+  # Remove SentiCore block from TOOLS.md
+  if [[ -f "$TOOLS_FILE" ]]; then
+    if grep -q "SentiCore Installed" "$TOOLS_FILE"; then
+      ORIG_LINES=$(grep -o 'lines=[0-9]*' "$TOOLS_FILE" | grep -o '[0-9]*')
+      head -n "$ORIG_LINES" "$TOOLS_FILE" > /tmp/senticore_tools_tmp && mv /tmp/senticore_tools_tmp "$TOOLS_FILE"
+      echo "  ✓ Removed from TOOLS.md"
     else
-      echo "  ✓ SentiCore not found in SOUL.md, skipped"
+      echo "  ✓ SentiCore not found in TOOLS.md, skipped"
     fi
   else
-    echo "  ⚠ SOUL.md not found, skipped"
+    echo "  ⚠ TOOLS.md not found, skipped"
   fi
 
   echo ""
