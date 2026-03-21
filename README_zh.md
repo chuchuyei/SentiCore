@@ -45,7 +45,10 @@ bash install.sh --agent coo --lang en
 
 1. 將 `orchestration_prompt_zh.md` 的內容貼到你的 Agent **System Prompt** 最頂層。
 2. 將 `emotion_skill_zh.md` 與你自己的 `soul.md` 上傳至知識庫，或貼在 System Prompt 下半部。
-3. 開始對話！Agent 將在第一次互動時自動發起 3 題心理測驗進行初始化。
+3. **手動觸發冷啟動**：第一次對話時，請傳送以下訊息給 Agent：
+   > 「請執行冷啟動問卷，依序問我三題情境題來建立你的初始情緒基線。」
+
+   > **注意**：LLM 不保證會主動發起問卷。主動傳送此訊息可確保冷啟動正常執行。
 4. 每次回覆開頭會出現 JSON 情緒運算日誌，接著才是 Agent 的正式回覆。
 
 ## ⚙️ 衰減速度調整（Lambda）

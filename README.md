@@ -48,7 +48,10 @@ Restart your agent and SentiCore is live.
 
 1. Paste the contents of `orchestration_prompt_en.md` at the very top of your Agent's **System Prompt**.
 2. Upload `emotion_skill_en.md` and your own `soul.md` to the knowledge base, or paste them into the lower section of the System Prompt.
-3. Start chatting! On the first interaction, the agent will automatically initiate 3 psychological scenario questions for initialization.
+3. **Trigger the Cold Start manually**: On your first interaction, send the agent this message:
+   > "Please run the cold start questionnaire — ask me the 3 scenario questions to establish your initial emotion baseline."
+
+   > **Note**: LLMs do not always proactively initiate the questionnaire on their own. Sending this message guarantees it runs.
 4. Every response will begin with a JSON emotion log, followed by the agent's reply.
 
 ## ⚙️ Tuning the Decay Speed (Lambda)
