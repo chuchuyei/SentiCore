@@ -40,7 +40,7 @@ The script auto-detects all `~/.openclaw*/workspace` directories:
 - **Multiple agents**: shows an interactive menu to pick one or all.
 - **`--agent NAME`**: skips the menu, installs directly to the specified agent.
 
-It copies `emotion_skill_*.md` into `workspace/skills/` and appends the orchestration prompt to `workspace/SOUL.md`. Idempotent — safe to run multiple times.
+It copies `emotion_skill_*.md` into `workspace/skills/` and registers the full orchestration prompt + tool schema in `workspace/TOOLS.md`. Idempotent — safe to run multiple times. `SOUL.md` is never modified.
 
 Restart your agent and SentiCore is live.
 
@@ -50,6 +50,25 @@ Restart your agent and SentiCore is live.
 2. Upload `emotion_skill_en.md` and your own `soul.md` to the knowledge base, or paste them into the lower section of the System Prompt.
 3. Start chatting! On the first interaction, the agent will automatically initiate 3 psychological scenario questions for initialization.
 4. Every response will begin with a JSON emotion log, followed by the agent's reply.
+
+## ⚙️ Tuning the Decay Speed (Lambda)
+
+The persistence layer uses exponential decay to fade emotions toward baseline over time:
+
+```
+E(t) = Baseline + (E_prev - Baseline) × e^(−λ × hours_elapsed)
+```
+
+Adjust `DECAY_LAMBDA` in `emotion_skill_*.md` to match your agent's personality:
+
+| λ value | Half-life | Best for |
+|---------|-----------|----------|
+| `0.05` | ~14 hours | Companion agents, long-term memory, slow emotional recovery |
+| `0.10` | ~7 hours | Balanced general use |
+| `0.1625` | ~4 hours | Work/task agents, fast emotional reset |
+| `0.35` | ~2 hours | Very reactive agents, near-stateless between sessions |
+
+The default is `0.05`. To change it, edit the installed skill file at `~/.openclaw-{agent}/workspace/skills/emotion_skill_*.md` and update the `DECAY_LAMBDA` constant.
 
 ## 🔬 Research Backing
 The weights and trigger scenarios of this engine are based on the following academic research:

@@ -37,7 +37,7 @@ bash install.sh --agent coo --lang en
 - **多代理人**：顯示互動選單，可選擇單一或全部安裝。
 - **`--agent NAME`**：跳過選單，直接裝到指定代理人。
 
-複製 `emotion_skill_*.md` 到 `workspace/skills/`，並將編排指令附加到 `workspace/SOUL.md`。支援重複執行，不會重複安裝。
+複製 `emotion_skill_*.md` 到 `workspace/skills/`，並將完整編排指令 + 工具 Schema 註冊到 `workspace/TOOLS.md`。支援重複執行，不會重複安裝。**`SOUL.md` 完全不會被修改。**
 
 重啟你的 Agent，SentiCore 即刻生效。
 
@@ -47,6 +47,25 @@ bash install.sh --agent coo --lang en
 2. 將 `emotion_skill_zh.md` 與你自己的 `soul.md` 上傳至知識庫，或貼在 System Prompt 下半部。
 3. 開始對話！Agent 將在第一次互動時自動發起 3 題心理測驗進行初始化。
 4. 每次回覆開頭會出現 JSON 情緒運算日誌，接著才是 Agent 的正式回覆。
+
+## ⚙️ 衰減速度調整（Lambda）
+
+持久化層使用指數衰減將情緒向基準線回歸：
+
+```
+E(t) = Baseline + (E_prev - Baseline) × e^(−λ × 經過小時數)
+```
+
+根據你的 Agent 定位，調整 `emotion_skill_*.md` 裡的 `DECAY_LAMBDA`：
+
+| λ 值 | 半衰期 | 適合場景 |
+|------|--------|----------|
+| `0.05` | 約 14 小時 | 陪伴型 Agent，情緒記憶持久，回復慢 |
+| `0.10` | 約 7 小時 | 通用均衡 |
+| `0.1625` | 約 4 小時 | 工作型 Agent，情緒重置快 |
+| `0.35` | 約 2 小時 | 高反應型，近乎無跨 session 記憶 |
+
+預設值為 `0.05`。修改位置：`~/.openclaw-{agent}/workspace/skills/emotion_skill_*.md` 中的 `DECAY_LAMBDA` 常數。
 
 ## 🔬 理論基礎 (Research Backing)
 本引擎之權重與觸發情境基於以下學術研究：
