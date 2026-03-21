@@ -14,13 +14,31 @@
 - `orchestration_prompt_en.md`：核心系統編排指令（英文版）。
 - `emotion_skill_zh.md`：情緒運算引擎（中文版）。
 - `emotion_skill_en.md`：情緒運算引擎（英文版）。
+- `install.sh`：OpenClaw 一鍵安裝腳本。
 
 ## 🚀 如何使用 (How to Use)
-1. 建立你的 AI Agent（如在 Claude, GPTs 或其他開源框架中）。
-2. 將 `orchestration_prompt_zh.md`（或英文版）的內容貼到你的 Agent **System Prompt** 的最頂層。
-3. 將 `emotion_skill_zh.md`（或英文版）與你自己的 `soul.md` 作為知識庫檔案上傳，或直接貼在 System Prompt 的下半部。
-4. 開始對話！Agent 將會在第一次對話時，自動發起 3 題心理測驗進行初始化。
-5. 每次對話，你都會在開頭看到一段 JSON 格式的「大腦情緒運算日誌」，接著才是 AI 的回覆。
+
+### OpenClaw 用戶（推薦）
+
+```bash
+git clone https://github.com/chuchuyei/SentiCore.git
+cd SentiCore
+bash install.sh           # 預設：繁體中文
+bash install.sh --lang en # 英文版
+```
+
+腳本會自動偵測所有 `~/.openclaw*/workspace` 目錄並執行：
+- 將 `emotion_skill_*.md` 複製到 `workspace/skills/`
+- 將編排指令附加到 `workspace/SOUL.md`
+
+重啟你的 Agent，SentiCore 即刻生效。
+
+### 手動安裝
+
+1. 將 `orchestration_prompt_zh.md` 的內容貼到你的 Agent **System Prompt** 最頂層。
+2. 將 `emotion_skill_zh.md` 與你自己的 `soul.md` 上傳至知識庫，或貼在 System Prompt 下半部。
+3. 開始對話！Agent 將在第一次互動時自動發起 3 題心理測驗進行初始化。
+4. 每次回覆開頭會出現 JSON 情緒運算日誌，接著才是 Agent 的正式回覆。
 
 ## 🔬 理論基礎 (Research Backing)
 本引擎之權重與觸發情境基於以下學術研究：

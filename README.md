@@ -17,13 +17,31 @@ A dynamic emotion computation engine developed based on the theories of Paul Ekm
 - `orchestration_prompt_zh.md`: The core system orchestration prompt (Traditional Chinese).
 - `emotion_skill_en.md`: The emotion computation engine (English version).
 - `emotion_skill_zh.md`: The emotion computation engine (Traditional Chinese version).
+- `install.sh`: One-command installer for OpenClaw users.
 
 ## 🚀 How to Use
-1. Create your AI Agent (e.g., in Claude, custom GPTs, or other open-source frameworks).
-2. Paste the contents of `orchestration_prompt_en.md` (or the ZH version) to the very top of your Agent's **System Prompt**.
-3. Upload `emotion_skill_en.md` and your own `soul.md` to your Agent's knowledge base, or paste them directly into the lower section of the System Prompt.
-4. Start chatting! The Agent will automatically initiate a 3-question psychological test during the first interaction to initialize its state.
-5. For every subsequent conversation, you will see a JSON "brain emotion log" at the beginning, followed by the AI's response in character.
+
+### For OpenClaw Users (Recommended)
+
+```bash
+git clone https://github.com/chuchuyei/SentiCore.git
+cd SentiCore
+bash install.sh           # default: Traditional Chinese
+bash install.sh --lang en # English version
+```
+
+The script auto-detects all `~/.openclaw*/workspace` directories and:
+- Copies `emotion_skill_*.md` into `workspace/skills/`
+- Appends the orchestration prompt to `workspace/SOUL.md`
+
+Restart your agent and SentiCore is live.
+
+### Manual Installation
+
+1. Paste the contents of `orchestration_prompt_en.md` at the very top of your Agent's **System Prompt**.
+2. Upload `emotion_skill_en.md` and your own `soul.md` to the knowledge base, or paste them into the lower section of the System Prompt.
+3. Start chatting! On the first interaction, the agent will automatically initiate 3 psychological scenario questions for initialization.
+4. Every response will begin with a JSON emotion log, followed by the agent's reply.
 
 ## 🔬 Research Backing
 The weights and trigger scenarios of this engine are based on the following academic research:
