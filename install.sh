@@ -175,10 +175,11 @@ install_to() {
 
   echo "▶ $AGENT_NAME"
 
-  # Install skill file
+  # Install skill file (substitute memory path placeholder)
   if [[ -d "$SKILLS_DIR" ]]; then
-    cp "$SKILL_FILE" "$SKILLS_DIR/$SKILL_FILENAME"
-    echo "  ✓ $SKILL_FILENAME → skills/"
+    local MEMORY_PATH="$WORKSPACE/memory/emotion_state.json"
+    sed "s|EMOTION_STATE_PATH_PLACEHOLDER|${MEMORY_PATH}|g" "$SKILL_FILE" > "$SKILLS_DIR/$SKILL_FILENAME"
+    echo "  ✓ $SKILL_FILENAME → skills/ (memory: $MEMORY_PATH)"
   else
     echo "  ⚠ skills/ not found, skipping skill file"
   fi

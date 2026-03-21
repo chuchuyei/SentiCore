@@ -31,3 +31,99 @@ At the beginning of every response, you must output the following JSON state:
 }
 ```
 (Proceed with the actual conversation below)
+
+## 5. Persistence Protocol
+After each interaction, call `save_emotion_state()` to write the current emotion snapshot to memory.
+On next startup, call `load_emotion_state()` to restore the previous state with automatic time-based decay applied (exponential decay, λ=0.05, ~14 hours to half-decay).
+If no history exists, automatically enter the cold-start onboarding flow.
+
+## 程式碼
+
+```python
+import json
+import os
+import math
+from datetime import datetime, timezone
+
+EMOTION_STATE_PATH = "EMOTION_STATE_PATH_PLACEHOLDER"
+DECAY_LAMBDA = 0.05  # ~14 hours to half-decay
+
+EMOTION_KEYS = [
+    "Joy", "Amusement", "Contentment", "Excitement", "Admiration", "Awe",
+    "Pride", "Romantic_Love", "Sensuality", "Relief", "Compassion", "Nostalgia",
+    "Anger", "Fear", "Anxiety", "Sadness", "Disgust", "Shame", "Guilt",
+    "Envy", "Frustration", "Boredom", "Confusion", "Loneliness", "Longing",
+    "Suffering", "Contempt", "Calm"
+]
+
+
+def _default_state():
+    return {e: 0 for e in EMOTION_KEYS}
+
+
+def load_emotion_state():
+    """
+    Load previous emotion state and apply exponential time-based decay.
+    Returns all-zero state (triggers cold start) if no record exists.
+    Returns: (decayed_emotions, baseline)
+    """
+    if not os.path.exists(EMOTION_STATE_PATH):
+        return _default_state(), _default_state()
+
+    with open(EMOTION_STATE_PATH, 'r', encoding='utf-8') as f:
+        state = json.load(f)
+
+    last_time = datetime.fromisoformat(state['timestamp'])
+    if last_time.tzinfo is None:
+        last_time = last_time.replace(tzinfo=timezone.utc)
+
+    hours_elapsed = (datetime.now(timezone.utc) - last_time).total_seconds() / 3600
+    decay = math.exp(-DECAY_LAMBDA * hours_elapsed)
+
+    baseline = state.get('baseline', _default_state())
+    emotions = state.get('emotions', _default_state())
+
+    decayed = {
+        e: round(baseline.get(e, 0) + (emotions.get(e, 0) - baseline.get(e, 0)) * decay, 1)
+        for e in EMOTION_KEYS
+    }
+
+    return decayed, baseline
+
+
+def save_emotion_state(emotions: dict, baseline: dict) -> dict:
+    """
+    Save current emotion state and timestamp to memory.
+    Called after each interaction via the update_emotion_state tool.
+    """
+    os.makedirs(os.path.dirname(EMOTION_STATE_PATH), exist_ok=True)
+
+    state = {
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'emotions': emotions,
+        'baseline': baseline
+    }
+
+    with open(EMOTION_STATE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+    return state
+
+
+def emotion_status() -> str:
+    """Return a summary of the current persisted emotion state for diagnostics."""
+    if not os.path.exists(EMOTION_STATE_PATH):
+        return "No emotion record found (cold start state)"
+
+    with open(EMOTION_STATE_PATH, 'r', encoding='utf-8') as f:
+        state = json.load(f)
+
+    top = sorted(state['emotions'].items(), key=lambda x: abs(x[1]), reverse=True)[:3]
+    top_str = ", ".join(f"{e}({v})" for e, v in top)
+    return f"Last updated: {state.get('timestamp', 'unknown')}\nTop 3: {top_str}"
+```
+
+## Notes
+- Emotion state stored at: `EMOTION_STATE_PATH_PLACEHOLDER`
+- Decay formula: `remaining = baseline + (current - baseline) × e^(-0.05 × hours_elapsed)`
+- Call `emotion_status()` to inspect the current persisted state

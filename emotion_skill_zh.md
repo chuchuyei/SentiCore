@@ -31,3 +31,98 @@
 }
 ```
 (隨後開始正式對話)
+
+## 5. 持久化協定 (Persistence Protocol)
+每次互動結束後，呼叫 `save_emotion_state()` 將當前情緒快照寫入記憶體。
+下次啟動時，呼叫 `load_emotion_state()` 讀取上次狀態，並自動套用時間衰減（指數衰減，λ=0.05，約 14 小時衰減一半）。
+若無歷史記錄，自動進入冷啟動流程。
+
+## 程式碼
+
+```python
+import json
+import os
+import math
+from datetime import datetime, timezone
+
+EMOTION_STATE_PATH = "EMOTION_STATE_PATH_PLACEHOLDER"
+DECAY_LAMBDA = 0.05  # 約 14 小時衰減一半
+
+EMOTION_KEYS = [
+    "快樂", "娛樂", "滿足", "興奮", "欽羨", "敬畏", "成就感", "浪漫之愛",
+    "感官的", "鬆了一口氣", "同情", "感傷", "憤怒", "恐懼", "焦慮", "悲傷",
+    "厭惡", "恥辱", "內疚", "嫉妒", "挫敗", "厭倦", "困惑", "孤獨",
+    "渴望", "傷痛", "輕蔑", "平靜"
+]
+
+
+def _default_state():
+    return {e: 0 for e in EMOTION_KEYS}
+
+
+def load_emotion_state():
+    """
+    讀取上次情緒狀態，根據時間流逝進行指數衰減。
+    若無記錄，回傳全零初始狀態（觸發冷啟動）。
+    回傳：(decayed_emotions, baseline)
+    """
+    if not os.path.exists(EMOTION_STATE_PATH):
+        return _default_state(), _default_state()
+
+    with open(EMOTION_STATE_PATH, 'r', encoding='utf-8') as f:
+        state = json.load(f)
+
+    last_time = datetime.fromisoformat(state['timestamp'])
+    if last_time.tzinfo is None:
+        last_time = last_time.replace(tzinfo=timezone.utc)
+
+    hours_elapsed = (datetime.now(timezone.utc) - last_time).total_seconds() / 3600
+    decay = math.exp(-DECAY_LAMBDA * hours_elapsed)
+
+    baseline = state.get('baseline', _default_state())
+    emotions = state.get('emotions', _default_state())
+
+    decayed = {
+        e: round(baseline.get(e, 0) + (emotions.get(e, 0) - baseline.get(e, 0)) * decay, 1)
+        for e in EMOTION_KEYS
+    }
+
+    return decayed, baseline
+
+
+def save_emotion_state(emotions: dict, baseline: dict) -> dict:
+    """
+    儲存當前情緒狀態與時間戳至記憶體。
+    在每次對話結束、呼叫 update_emotion_state 工具時執行。
+    """
+    os.makedirs(os.path.dirname(EMOTION_STATE_PATH), exist_ok=True)
+
+    state = {
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'emotions': emotions,
+        'baseline': baseline
+    }
+
+    with open(EMOTION_STATE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+    return state
+
+
+def emotion_status() -> str:
+    """回傳當前情緒狀態摘要，供診斷使用。"""
+    if not os.path.exists(EMOTION_STATE_PATH):
+        return "尚無情緒記錄（冷啟動狀態）"
+
+    with open(EMOTION_STATE_PATH, 'r', encoding='utf-8') as f:
+        state = json.load(f)
+
+    top = sorted(state['emotions'].items(), key=lambda x: abs(x[1]), reverse=True)[:3]
+    top_str = ", ".join(f"{e}({v})" for e, v in top)
+    return f"上次更新：{state.get('timestamp', 'unknown')}\nTop 3 情緒：{top_str}"
+```
+
+## 環境說明
+- 情緒狀態存於：`EMOTION_STATE_PATH_PLACEHOLDER`
+- 衰減公式：`remaining = baseline + (current - baseline) × e^(-0.05 × 經過小時數)`
+- 可呼叫 `emotion_status()` 查看當前持久化狀態
