@@ -83,7 +83,7 @@ def load_emotion_state():
     emotions = state.get('emotions', _default_state())
 
     decayed = {
-        e: round(baseline.get(e, 0) + (emotions.get(e, 0) - baseline.get(e, 0)) * decay, 1)
+        e: max(-100.0, min(100.0, round(baseline.get(e, 0) + (emotions.get(e, 0) - baseline.get(e, 0)) * decay, 1)))
         for e in EMOTION_KEYS
     }
 
