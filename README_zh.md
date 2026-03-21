@@ -15,6 +15,9 @@
 - `emotion_skill_zh.md`：情緒運算引擎（中文版）。
 - `emotion_skill_en.md`：情緒運算引擎（英文版）。
 - `install.sh`：OpenClaw 一鍵安裝腳本。
+- `remove.sh`：OpenClaw 一鍵移除腳本。
+- `tools/update_emotion_state.json`：Function Calling Schema，用於將情緒狀態持久化寫入跨對話記憶體。
+- `templates/sample_soul.md`：深海龍蝦角色靈魂範本，可直接修改使用。
 
 ## 🚀 如何使用 (How to Use)
 

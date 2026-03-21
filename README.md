@@ -18,6 +18,9 @@ A dynamic emotion computation engine developed based on the theories of Paul Ekm
 - `emotion_skill_en.md`: The emotion computation engine (English version).
 - `emotion_skill_zh.md`: The emotion computation engine (Traditional Chinese version).
 - `install.sh`: One-command installer for OpenClaw users.
+- `remove.sh`: Clean uninstaller for OpenClaw users.
+- `tools/update_emotion_state.json`: Function Calling schema for persisting emotion state across conversations.
+- `templates/sample_soul.md`: A ready-to-use soul character template to get started immediately.
 
 ## 🚀 How to Use
 
