@@ -122,10 +122,11 @@ install_to() {
   fi
 
   if [[ -f "$SOUL_FILE" ]]; then
-    if grep -qF "$SENTINEL" "$SOUL_FILE"; then
+    if grep -qF "SentiCore Installed" "$SOUL_FILE"; then
       echo "  ✓ orchestration prompt already installed, skipped"
     else
-      printf "\n\n%s\n" "$SENTINEL" >> "$SOUL_FILE"
+      ORIG_LINES=$(wc -l < "$SOUL_FILE" | tr -d ' ')
+      printf "\n\n<!-- SentiCore Installed | lines=%s -->\n" "$ORIG_LINES" >> "$SOUL_FILE"
       cat "$ORCHESTRATION_FILE" >> "$SOUL_FILE"
       echo "  ✓ orchestration prompt → SOUL.md"
     fi

@@ -103,11 +103,11 @@ remove_from() {
 
   # Remove orchestration prompt block from SOUL.md
   if [[ -f "$SOUL_FILE" ]]; then
-    if grep -qF "$SENTINEL" "$SOUL_FILE"; then
-      # Remove from sentinel line to end of file
-      sed -i '' "/$(echo "$SENTINEL" | sed 's/[\/&]/\\&/g')/,\$d" "$SOUL_FILE"
-      # Clean up trailing blank lines at end of file
-      sed -i '' -e '/^[[:space:]]*$/{$d;}' "$SOUL_FILE"
+    if grep -q "SentiCore Installed" "$SOUL_FILE"; then
+      # Read original line count stored in sentinel
+      ORIG_LINES=$(grep -o 'lines=[0-9]*' "$SOUL_FILE" | grep -o '[0-9]*')
+      # Truncate back to original line count
+      head -n "$ORIG_LINES" "$SOUL_FILE" > /tmp/senticore_soul_tmp && mv /tmp/senticore_soul_tmp "$SOUL_FILE"
       echo "  ✓ Orchestration prompt removed from SOUL.md"
     else
       echo "  ✓ SentiCore not found in SOUL.md, skipped"
