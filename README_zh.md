@@ -74,3 +74,10 @@ E(t) = Baseline + (E_prev - Baseline) × e^(−λ × 經過小時數)
 
 ---
 *Created by chuchuyei - 歡迎 Fork 與提交 PR 來優化權重邏輯！*
+
+## ⚖️ 授權與商業使用 (License & Commercial Use)
+
+本專案採用「雙重授權模式 (Dual Licensing)」：
+
+1. **開源使用 (GNU AGPLv3)**：歡迎個人開發者、學生與非營利開源專案免費使用。根據 [AGPLv3](LICENSE) 條款，如果您將 SentiCore 用於提供網路服務 (如 SaaS、API 呼叫或對話機器人後端) 且對外開放，您的**整個應用程式原始碼必須以 AGPLv3 同步開源**。
+2. **商業授權 (Commercial License)**：如果您希望將 SentiCore 用於閉源的商業專案、付費產品，或無法接受 AGPLv3 的開源傳染性條款，請與作者聯繫以取得專屬商業授權。

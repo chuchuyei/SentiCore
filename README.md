@@ -77,3 +77,10 @@ The weights and trigger scenarios of this engine are based on the following acad
 
 ---
 *Created by [chuchuyei](https://github.com/chuchuyei) — Forks and PRs are welcome to optimize the weighting logic!*
+
+## ⚖️ License & Commercial Use
+
+This project operates under a **Dual Licensing** model:
+
+1. **Open Source (GNU AGPLv3)**: Free for personal developers, students, and open-source projects. Under the [AGPLv3](LICENSE), if you use SentiCore to provide a network service (e.g., SaaS, API, or chatbot backend) to the public, your **entire application source code must be open-sourced** under the same AGPLv3 license.
+2. **Commercial License**: If you wish to use SentiCore in a closed-source commercial product, a paid service, or cannot comply with the copyleft requirements of AGPLv3, please contact the author to purchase a commercial license.
