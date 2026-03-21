@@ -26,13 +26,18 @@ A dynamic emotion computation engine developed based on the theories of Paul Ekm
 ```bash
 git clone https://github.com/chuchuyei/SentiCore.git
 cd SentiCore
-bash install.sh           # default: Traditional Chinese
-bash install.sh --lang en # English version
+bash install.sh                    # auto-detect; interactive menu if multiple agents
+bash install.sh --agent coo        # install to a specific agent
+bash install.sh --lang en          # English version (default: zh)
+bash install.sh --agent coo --lang en
 ```
 
-The script auto-detects all `~/.openclaw*/workspace` directories and:
-- Copies `emotion_skill_*.md` into `workspace/skills/`
-- Appends the orchestration prompt to `workspace/SOUL.md`
+The script auto-detects all `~/.openclaw*/workspace` directories:
+- **Single agent**: installs immediately, no prompts.
+- **Multiple agents**: shows an interactive menu to pick one or all.
+- **`--agent NAME`**: skips the menu, installs directly to the specified agent.
+
+It copies `emotion_skill_*.md` into `workspace/skills/` and appends the orchestration prompt to `workspace/SOUL.md`. Idempotent — safe to run multiple times.
 
 Restart your agent and SentiCore is live.
 

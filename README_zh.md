@@ -23,13 +23,18 @@
 ```bash
 git clone https://github.com/chuchuyei/SentiCore.git
 cd SentiCore
-bash install.sh           # 預設：繁體中文
-bash install.sh --lang en # 英文版
+bash install.sh                    # 自動偵測；多代理人時顯示互動選單
+bash install.sh --agent coo        # 直接指定代理人安裝
+bash install.sh --lang en          # 英文版（預設：zh）
+bash install.sh --agent coo --lang en
 ```
 
-腳本會自動偵測所有 `~/.openclaw*/workspace` 目錄並執行：
-- 將 `emotion_skill_*.md` 複製到 `workspace/skills/`
-- 將編排指令附加到 `workspace/SOUL.md`
+腳本會自動偵測所有 `~/.openclaw*/workspace` 目錄：
+- **單一代理人**：直接安裝，無需選擇。
+- **多代理人**：顯示互動選單，可選擇單一或全部安裝。
+- **`--agent NAME`**：跳過選單，直接裝到指定代理人。
+
+複製 `emotion_skill_*.md` 到 `workspace/skills/`，並將編排指令附加到 `workspace/SOUL.md`。支援重複執行，不會重複安裝。
 
 重啟你的 Agent，SentiCore 即刻生效。
 

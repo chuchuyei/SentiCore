@@ -1,10 +1,11 @@
 #!/bin/bash
 # SentiCore Installer for OpenClaw
-# Usage: bash install.sh [--lang en]
+# Usage: bash install.sh [--lang en|zh] [--agent AGENT_NAME]
 
 set -e
 
 LANG_CODE="zh"
+AGENT_FILTER=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -13,9 +14,13 @@ while [[ $# -gt 0 ]]; do
       LANG_CODE="$2"
       shift 2
       ;;
+    --agent)
+      AGENT_FILTER="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: bash install.sh [--lang en|zh]"
+      echo "Usage: bash install.sh [--lang en|zh] [--agent AGENT_NAME]"
       exit 1
       ;;
   esac
@@ -41,25 +46,71 @@ if [[ ! -f "$ORCHESTRATION_FILE" ]]; then
   exit 1
 fi
 
-# Detect OpenClaw workspaces
-WORKSPACES=($(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null))
+# Detect all OpenClaw workspaces
+ALL_WORKSPACES=($(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null))
 
-if [[ ${#WORKSPACES[@]} -eq 0 ]]; then
+if [[ ${#ALL_WORKSPACES[@]} -eq 0 ]]; then
   echo "Error: No OpenClaw workspace found under $HOME"
   exit 1
 fi
 
-echo "Found ${#WORKSPACES[@]} OpenClaw workspace(s). Installing SentiCore [lang=${LANG_CODE}]..."
-echo ""
+# Determine target workspaces
+if [[ -n "$AGENT_FILTER" ]]; then
+  # --agent specified: find matching workspace
+  TARGET=()
+  for WS in "${ALL_WORKSPACES[@]}"; do
+    NAME=$(basename "$(dirname "$WS")" | sed 's/^\.openclaw-//')
+    if [[ "$NAME" == "$AGENT_FILTER" ]]; then
+      TARGET+=("$WS")
+    fi
+  done
+  if [[ ${#TARGET[@]} -eq 0 ]]; then
+    echo "Error: Agent '$AGENT_FILTER' not found."
+    echo "Available agents:"
+    for WS in "${ALL_WORKSPACES[@]}"; do
+      echo "  $(basename "$(dirname "$WS")" | sed 's/^\.openclaw-//')"
+    done
+    exit 1
+  fi
 
-for WORKSPACE in "${WORKSPACES[@]}"; do
-  SKILLS_DIR="$WORKSPACE/skills"
-  SOUL_FILE="$WORKSPACE/SOUL.md"
-  AGENT_NAME=$(basename "$(dirname "$WORKSPACE")")
+elif [[ ${#ALL_WORKSPACES[@]} -eq 1 ]]; then
+  # Only one agent: install directly
+  TARGET=("${ALL_WORKSPACES[@]}")
+
+else
+  # Multiple agents: show interactive menu
+  echo "Multiple OpenClaw agents detected:"
+  echo ""
+  NAMES=()
+  for WS in "${ALL_WORKSPACES[@]}"; do
+    NAME=$(basename "$(dirname "$WS")" | sed 's/^\.openclaw-//')
+    NAMES+=("$NAME")
+    echo "  [${#NAMES[@]}] $NAME"
+  done
+  echo "  [a] All agents"
+  echo ""
+  read -rp "Install to which agent? " CHOICE
+
+  if [[ "$CHOICE" == "a" || "$CHOICE" == "A" ]]; then
+    TARGET=("${ALL_WORKSPACES[@]}")
+  elif [[ "$CHOICE" =~ ^[0-9]+$ ]] && (( CHOICE >= 1 && CHOICE <= ${#ALL_WORKSPACES[@]} )); then
+    TARGET=("${ALL_WORKSPACES[$((CHOICE-1))]}")
+  else
+    echo "Invalid selection."
+    exit 1
+  fi
+fi
+
+# Install function
+install_to() {
+  local WORKSPACE="$1"
+  local SKILLS_DIR="$WORKSPACE/skills"
+  local SOUL_FILE="$WORKSPACE/SOUL.md"
+  local AGENT_NAME
+  AGENT_NAME=$(basename "$(dirname "$WORKSPACE")" | sed 's/^\.openclaw-//')
 
   echo "▶ $AGENT_NAME"
 
-  # Install skill file
   if [[ -d "$SKILLS_DIR" ]]; then
     cp "$SKILL_FILE" "$SKILLS_DIR/emotion_skill_${LANG_CODE}.md"
     echo "  ✓ emotion_skill_${LANG_CODE}.md → skills/"
@@ -67,7 +118,6 @@ for WORKSPACE in "${WORKSPACES[@]}"; do
     echo "  ⚠ skills/ not found, skipping skill file"
   fi
 
-  # Append orchestration prompt to SOUL.md (idempotent)
   if [[ -f "$SOUL_FILE" ]]; then
     if grep -qF "$SENTINEL" "$SOUL_FILE"; then
       echo "  ✓ orchestration prompt already installed, skipped"
@@ -81,6 +131,13 @@ for WORKSPACE in "${WORKSPACES[@]}"; do
   fi
 
   echo ""
+}
+
+echo "Installing SentiCore [lang=${LANG_CODE}]..."
+echo ""
+
+for WORKSPACE in "${TARGET[@]}"; do
+  install_to "$WORKSPACE"
 done
 
 echo "Done. SentiCore is ready."
