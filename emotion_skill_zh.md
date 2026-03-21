@@ -18,7 +18,8 @@
 ## 3. 動態運算邏輯 (Dynamic Workflow)
 每次互動請執行：
 1. **【聯動更新 Interlocking】**：判斷輸入資訊觸發的 1~2 項主情緒並增減數值。同向情緒（如恐懼與焦慮）需連動上升，對立情緒（如憤怒與平靜）需強制下降。
-2. **【回合衰減 Decay】**：將更新前的所有數值，向初始 Baseline 回歸 15%。
+2. **【回合衰減 Decay】**：將更新前的所有數值，向初始 Baseline 回歸 **3%**。
+   *註：此 3% 為「對話內（Session 內）」的短期工作記憶平復。跨 Session 的長期時間流逝衰減，由 Python 腳本的指數衰減公式單獨處理，兩者不重疊。*
 3. **【語氣定調 Tone Setting】**：提取數值絕對值最大的前 3 名情緒，決定本次回覆的語氣與心理狀態。
 
 ## 4. 輸出要求 (Output Format)
@@ -92,15 +93,22 @@ def load_emotion_state():
 
 def save_emotion_state(emotions: dict, baseline: dict) -> dict:
     """
-    儲存當前情緒狀態與時間戳至記憶體。
+    儲存當前情緒狀態與時間戳至記憶體，並執行 Baseline Drift。
     在每次對話結束、呼叫 update_emotion_state 工具時執行。
     """
+    # Baseline Drift：每次存檔讓 baseline 向當前情緒靠近 0.1%，實現性格緩慢演化
+    DRIFT_RATE = 0.001
+    new_baseline = {
+        e: max(-100.0, min(100.0, round(baseline.get(e, 0) + (emotions.get(e, 0) - baseline.get(e, 0)) * DRIFT_RATE, 2)))
+        for e in EMOTION_KEYS
+    }
+
     os.makedirs(os.path.dirname(EMOTION_STATE_PATH), exist_ok=True)
 
     state = {
         'timestamp': datetime.now(timezone.utc).isoformat(),
         'emotions': emotions,
-        'baseline': baseline
+        'baseline': new_baseline
     }
 
     with open(EMOTION_STATE_PATH, 'w', encoding='utf-8') as f:

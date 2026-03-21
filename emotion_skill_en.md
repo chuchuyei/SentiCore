@@ -18,7 +18,8 @@ If no historical emotion data exists, sequentially ask the user the following 3 
 ## 3. Dynamic Workflow
 Execute the following for every interaction:
 1. **[Interlocking Update]**: Identify 1-2 primary emotions triggered by the input and adjust their values. Synergistic emotions (e.g., Fear and Anxiety) must rise together, while antagonistic emotions (e.g., Anger and Calm) must decrease.
-2. **[Turn-based Decay]**: Regress all previous values toward the initial Baseline by 15%.
+2. **[Turn-based Decay]**: Regress all previous values toward the initial Baseline by **3%**.
+   *Note: This 3% is for short-term working memory regulation within a session. Long-term cross-session decay based on real-world time is handled by the Python script's exponential decay formula. The two do not overlap.*
 3. **[Tone Setting]**: Extract the top 3 emotions with the highest absolute values. These will dictate your tone, vocabulary, and psychological state for the current response.
 
 ## 4. Output Format
@@ -93,15 +94,23 @@ def load_emotion_state():
 
 def save_emotion_state(emotions: dict, baseline: dict) -> dict:
     """
-    Save current emotion state and timestamp to memory.
+    Save current emotion state to memory with Baseline Drift applied.
     Called after each interaction via the update_emotion_state tool.
     """
+    # Baseline Drift: nudge baseline 0.1% toward current emotions each save,
+    # allowing personality to evolve gradually over hundreds of interactions.
+    DRIFT_RATE = 0.001
+    new_baseline = {
+        e: max(-100.0, min(100.0, round(baseline.get(e, 0) + (emotions.get(e, 0) - baseline.get(e, 0)) * DRIFT_RATE, 2)))
+        for e in EMOTION_KEYS
+    }
+
     os.makedirs(os.path.dirname(EMOTION_STATE_PATH), exist_ok=True)
 
     state = {
         'timestamp': datetime.now(timezone.utc).isoformat(),
         'emotions': emotions,
-        'baseline': baseline
+        'baseline': new_baseline
     }
 
     with open(EMOTION_STATE_PATH, 'w', encoding='utf-8') as f:
