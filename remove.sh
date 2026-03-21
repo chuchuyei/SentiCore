@@ -24,7 +24,10 @@ done
 SENTINEL="<!-- SentiCore Installed -->"
 
 # Detect all OpenClaw workspaces
-mapfile -t ALL_WORKSPACES < <(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null)
+ALL_WORKSPACES=()
+while IFS= read -r line; do
+  ALL_WORKSPACES+=("$line")
+done < <(find "$HOME" -maxdepth 2 -name "workspace" -path "*/.openclaw*/workspace" -type d 2>/dev/null)
 
 if [[ ${#ALL_WORKSPACES[@]} -eq 0 ]]; then
   echo "Error: No OpenClaw workspace found under $HOME"
