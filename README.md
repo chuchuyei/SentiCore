@@ -1,28 +1,116 @@
-# 🧠 SentiCore — A 27-dimensional emotion engine for AI agents
+# 🧠 SentiCore™ — A 27-Dimensional Emotion Engine for AI Agents
 
-A dynamic emotion computation engine developed based on the theories of Paul Ekman and Dacher Keltner (2017). This module can be embedded as an independent Skill into any LLM Agent, endowing it with an underlying psychological logic that features **Emotional Interlocking** and **Time Decay** mechanisms.
+[![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](LICENSE)
+[![Dimensions](https://img.shields.io/badge/Emotion%20Dimensions-27%2B1-purple)](README.md)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-green)](README.md)
+[![LLM Compatible](https://img.shields.io/badge/LLM-Any-orange)](README.md)
+
+A dynamic emotion computation engine based on Paul Ekman & Dacher Keltner (2017). Embed it as an independent Skill into any LLM Agent to give it **Emotional Interlocking**, **Time Decay**, and **Personality Drift** — real psychological depth, not hardcoded moods.
 
 > 中文版說明請見 [README_zh.md](./README_zh.md)
 
+---
+
+## 🚀 Quick Start
+
+**Deploy in 3 steps. Under 2 minutes.**
+
+**Step 1** — Paste `orchestration_prompt_en.md` at the very top of your Agent's **System Prompt**.
+
+**Step 2** — Upload `emotion_skill_en.md` and your `soul.md` to the knowledge base (or paste into the lower section of System Prompt).
+
+**Step 3** — Ensure your Agent has **Python execution permission** (used for time-decay calculations).
+
+> No `soul.md`? Use `templates/sample_soul.md` as a starting point, or let the Agent run the 3-question onboarding questionnaire.
+
+### Expected Output on First Response
+
+When SentiCore initializes successfully, the Agent will print this at the end of its **first response** as a reproducibility fallback:
+
+```json
+{
+  "timestamp": "2026-03-22T14:30:00+08:00",
+  "trigger_event": "Baseline initialized from soul.md",
+  "emotions": {
+    "Joy": 60, "Romantic_Love": 50, "Contentment": 45,
+    "Excitement": 30, "Compassion": 30, "Calm": 40,
+    "Amusement": 25, "Admiration": 20, "Awe": 15,
+    "Pride": 10, "Sensuality": 20, "Relief": 10,
+    "Nostalgia": 15, "Longing": 20, "Loneliness": 10,
+    "Anger": 0, "Fear": 5, "Anxiety": 5,
+    "Sadness": 0, "Disgust": 0, "Shame": 0,
+    "Guilt": 0, "Envy": 5, "Frustration": 0,
+    "Boredom": 0, "Confusion": 5, "Suffering": 0, "Contempt": 0
+  },
+  "baseline": { "Joy": 60, "Romantic_Love": 50, "Calm": 40 }
+}
+```
+
+The Agent will also announce: **"Emotion baseline successfully established"** and summarize its current state.
+
+---
+
+## ⚡ Why SentiCore?
+
+| Feature | Traditional AI Setup | SentiCore™ Engine |
+|---|---|---|
+| Personality | 🔴 Static, hardcoded in prompt | 🟢 27-dim matrix, dynamically computed |
+| Time awareness | 🔴 None — same mood forever | 🟢 Real exponential decay (λ-tunable) |
+| Memory continuity | 🔴 Reset every session | 🟢 Permanent baseline drift across sessions |
+| Emotional realism | 🔴 Single emotion label | 🟢 Interlocking: joy amplifies, anger suppresses |
+| Character evolution | 🔴 Impossible | 🟢 Baseline drifts 0.1% per interaction |
+| Setup complexity | 🟢 Copy-paste prompt | 🟢 Same — 3 steps, plug & play |
+
+---
+
+## 🧠 How It Works
+
+```mermaid
+graph LR
+    A([👤 User Input]) --> B[🐍 Python: Time Decay\nCalculation]
+    B --> C[🤖 LLM: 27-Dim\nEmotion Update]
+    C --> D[📈 Baseline Drift\nAdjustment]
+    D --> E([💾 JSON State Output\n& Final Response])
+
+    style A fill:#4a9eff,color:#fff
+    style B fill:#f0a500,color:#fff
+    style C fill:#7c3aed,color:#fff
+    style D fill:#059669,color:#fff
+    style E fill:#dc2626,color:#fff
+```
+
+**Each conversation turn:**
+1. **Time Decay** — Python calculates hours elapsed since last interaction, fades all emotions toward baseline via `E(t) = Baseline + (E_prev - Baseline) × e^(−λ × Δt)`
+2. **Emotion Update** — LLM evaluates the new input and updates the 27-dim matrix (interlocking rules apply)
+3. **Baseline Drift** — Each save nudges the baseline 0.1% toward the current emotion state (permanent character evolution)
+4. **Output** — JSON state is persisted + Agent responds with emotionally-consistent tone
+
+---
+
 ## ✨ Core Features
-- **27+1 Dimensional Matrix**: Accurately measures the emotional spectrum from Joy and Awe to Disgust and Longing, plus an absolute baseline (Calm).
-- **Emotional Interlocking**: Synergistic emotional diffusion and antagonistic emotional suppression, simulating the chain reactions of real human psychology.
-- **Time Decay Mechanism**: Emotions regress towards the baseline personality over conversational turns (default 3%), preventing the AI from being permanently stuck in extreme emotional states.
-- **Smart Dual-Track Onboarding**: AIs with an existing persona (`soul.md`) silently auto-generate their own baseline; blank-slate AIs use an interactive 3-question questionnaire. A JSON fallback is always printed to ensure reproducibility.
-- **Plug & Play**: Perfectly compatible with existing character profile files (`soul.md`), allowing for easy mounting or dismounting.
+
+- **27+1 Dimensional Matrix**: Accurately measures from Joy and Awe to Disgust and Longing, plus an absolute Calm anchor.
+- **Emotional Interlocking**: Synergistic diffusion and antagonistic suppression — simulating real psychological chain reactions.
+- **Time Decay Mechanism**: Emotions regress toward baseline per conversation turn (default 3%), preventing permanent extreme states.
+- **Baseline Drift**: Every interaction subtly evolves the Agent's personality (DRIFT_RATE=0.001). It genuinely changes over time.
+- **Smart Dual-Track Onboarding**: Agents with `soul.md` silently auto-generate baseline (Mode A); blank-slate Agents use a 3-question questionnaire (Mode B).
+- **Plug & Play**: Compatible with any existing character profile. Mount or dismount without touching `soul.md`.
+
+---
 
 ## 📂 File Structure
-- `README.md` / `README_zh.md`: Project documentation (EN / ZH).
-- `orchestration_prompt_en.md`: The core system orchestration prompt (English), responsible for bridging the emotion engine with your character's soul.
-- `orchestration_prompt_zh.md`: The core system orchestration prompt (Traditional Chinese).
-- `emotion_skill_en.md`: The emotion computation engine (English version).
-- `emotion_skill_zh.md`: The emotion computation engine (Traditional Chinese version).
-- `install.sh`: One-command installer for OpenClaw users.
-- `remove.sh`: Clean uninstaller for OpenClaw users.
-- `tools/update_emotion_state.json`: Function Calling schema for persisting emotion state across conversations.
-- `templates/sample_soul.md`: A ready-to-use soul character template to get started immediately.
 
-## 🚀 How to Use
+| File | Purpose |
+|------|---------|
+| `orchestration_prompt_en/zh.md` | Core system orchestration prompt — paste into System Prompt |
+| `emotion_skill_en/zh.md` | The computation engine — upload to knowledge base |
+| `install.sh` / `remove.sh` | One-command installer/uninstaller for OpenClaw users |
+| `tools/update_emotion_state.json` | Function Calling schema for persistent emotion memory |
+| `templates/sample_soul.md` | Ready-to-use soul character template |
+
+---
+
+## 🚀 Installation
 
 ### For OpenClaw Users (Recommended)
 
@@ -35,67 +123,48 @@ bash install.sh --lang en          # English version (default: zh)
 bash install.sh --agent coo --lang en
 ```
 
-The script auto-detects all `~/.openclaw*/workspace` directories:
-- **Single agent**: installs immediately, no prompts.
-- **Multiple agents**: shows an interactive menu to pick one or all.
-- **`--agent NAME`**: skips the menu, installs directly to the specified agent.
-
-It copies `emotion_skill_*.md` into `workspace/skills/` and registers the full orchestration prompt + tool schema in `workspace/TOOLS.md`. Idempotent — safe to run multiple times. `SOUL.md` is never modified.
-
-Restart your agent and SentiCore is live.
+The script auto-detects all `~/.openclaw*/workspace` directories. Idempotent — safe to run multiple times. `SOUL.md` is never modified.
 
 ### Manual Installation
 
-1. Paste the contents of `orchestration_prompt_en.md` at the very top of your Agent's **System Prompt**.
-2. Upload `emotion_skill_en.md` and your own `soul.md` to the knowledge base, or paste them into the lower section of the System Prompt.
-3. **First-session initialization** — SentiCore auto-selects the right mode:
-   - **If your agent has a `soul.md`** (Mode A): It will silently derive its own baseline from the persona and print a JSON block at the end of the first response. Save that JSON as `emotion_state.json` in your agent's memory directory if the tool call didn't persist it automatically.
-   - **If your agent has no persona** (Mode B): It will ask you 3 scenario questions to define its baseline.
-   - **Manual override**: Send `"Please initialize my emotion baseline with: {...}"` with a JSON object in your very first message.
-4. Every response will begin with a JSON emotion log, followed by the agent's reply.
+1. Paste `orchestration_prompt_en.md` at the very top of your Agent's **System Prompt**.
+2. Upload `emotion_skill_en.md` and your `soul.md` to the knowledge base.
+3. On first run, SentiCore auto-initializes (Mode A or B). Save the printed JSON as `emotion_state.json` if tool call didn't persist it automatically.
+4. Every response will begin with a JSON emotion log, followed by the Agent's reply.
 
-## ⚙️ Tuning the Decay Speed (Lambda)
+---
 
-The persistence layer uses exponential decay to fade emotions toward baseline over time:
+## ⚙️ Tuning Decay Speed (Lambda)
 
 ```
 E(t) = Baseline + (E_prev - Baseline) × e^(−λ × hours_elapsed)
 ```
 
-Adjust `DECAY_LAMBDA` in `emotion_skill_*.md` to match your agent's personality:
-
 | λ value | Half-life | Best for |
 |---------|-----------|----------|
-| `0.05` | ~14 hours | Companion agents, long-term memory, slow emotional recovery |
+| `0.05` | ~14 hours | Companion agents, slow emotional recovery |
 | `0.10` | ~7 hours | Balanced general use |
 | `0.1625` | ~4 hours | Work/task agents, fast emotional reset |
-| `0.35` | ~2 hours | Very reactive agents, near-stateless between sessions |
+| `0.35` | ~2 hours | Very reactive, near-stateless between sessions |
 
-The default is `0.05`. To change it, edit the installed skill file at `~/.openclaw-{agent}/workspace/skills/emotion_skill_*.md` and update the `DECAY_LAMBDA` constant.
+Default: `0.05`. Edit `DECAY_LAMBDA` in the installed `emotion_skill_*.md`.
 
-## 🔍 Checking Emotion Status
-
-Once initialized, you can ask your agent directly:
-
-> "Read `/path/to/workspace/memory/emotion_state.json` and tell me your current emotional state."
-
-Or more naturally:
-
-> "What's your current emotional state?"
-
-The agent will report its Top 3 active emotions and current tone. After a successful cold start, it will also proactively confirm: *"Emotion baseline successfully established"* and print the full JSON baseline at the end of its first response as a fallback — useful if the tool call failed to persist the file automatically.
+---
 
 ## 🔬 Research Backing
-The weights and trigger scenarios of this engine are based on the following academic research:
+
 - Ekman, P. (1992). "Are There Basic Emotions?"
 - Cowen, A., & Keltner, D. (2017). "Self-report captures 27 distinct categories of emotion." *PNAS*.
 
 ---
-*Created by [chuchuyei](https://github.com/chuchuyei) — Forks and PRs are welcome to optimize the weighting logic!*
 
 ## ⚖️ License & Commercial Use
 
-This project operates under a **Dual Licensing** model:
+**Dual Licensing model:**
 
-1. **Open Source (GNU AGPLv3)**: Free for personal developers, students, and open-source projects. Under the [AGPLv3](LICENSE), if you use SentiCore to provide a network service (e.g., SaaS, API, or chatbot backend) to the public, your **entire application source code must be open-sourced** under the same AGPLv3 license.
-2. **Commercial License**: If you wish to use SentiCore in a closed-source commercial product, a paid service, or cannot comply with the copyleft requirements of AGPLv3, please contact the author to purchase a commercial license.
+1. **Open Source (GNU AGPLv3)**: Free for personal developers, students, and open-source projects. Network service deployments must open-source the entire application under AGPLv3.
+2. **Commercial License**: For closed-source commercial products or SaaS that cannot comply with AGPLv3 copyleft — contact the author.
+
+---
+
+*Created by [chuchuyei](https://github.com/chuchuyei) — Forks and PRs welcome to optimize the weighting logic!*
