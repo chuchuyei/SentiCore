@@ -31,9 +31,9 @@ At the beginning of every response, you must output the following JSON state:
 (Proceed with the actual conversation below)
 
 ## 5. Persistence Protocol
-After each interaction, call `save_emotion_state()` to write the current emotion snapshot to memory.
-On next startup, call `load_emotion_state()` to restore the previous state with automatic time-based decay applied (exponential decay, λ=0.05, ~14 hours to half-decay).
-If no history exists, automatically enter the cold-start onboarding flow.
+After each interaction, call the `update_emotion_state` tool to write the current emotion snapshot to memory.
+On next startup, the system automatically restores the previous state with time-based decay applied (exponential decay, λ=0.05, ~14 hours to half-decay).
+If no history exists, automatically enter the onboarding flow.
 
 ## 程式碼
 
