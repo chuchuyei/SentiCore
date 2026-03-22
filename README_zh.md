@@ -70,6 +70,18 @@ E(t) = Baseline + (E_prev - Baseline) × e^(−λ × 經過小時數)
 
 預設值為 `0.05`。修改位置：`~/.openclaw-{agent}/workspace/skills/emotion_skill_*.md` 中的 `DECAY_LAMBDA` 常數。
 
+## 🔍 查詢情緒狀態
+
+初始化完成後，可以直接問代理人：
+
+> 「讀取 `/path/to/workspace/memory/emotion_state.json`，告訴我你現在的情緒狀態。」
+
+或更自然地：
+
+> 「你現在情緒狀態怎麼樣？」
+
+代理人會回報目前 Top 3 情緒與當下語氣。冷啟動成功後，代理人也會主動確認：*「情緒基線已建立完成」*，並在第一次回覆末尾附上完整 JSON 基線作為保底——若工具寫入未自動完成，可憑此手動建檔。
+
 ## 🔬 理論基礎 (Research Backing)
 本引擎之權重與觸發情境基於以下學術研究：
 - Ekman, P. (1992). "Are There Basic Emotions?"

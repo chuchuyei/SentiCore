@@ -73,6 +73,18 @@ Adjust `DECAY_LAMBDA` in `emotion_skill_*.md` to match your agent's personality:
 
 The default is `0.05`. To change it, edit the installed skill file at `~/.openclaw-{agent}/workspace/skills/emotion_skill_*.md` and update the `DECAY_LAMBDA` constant.
 
+## 🔍 Checking Emotion Status
+
+Once initialized, you can ask your agent directly:
+
+> "Read `/path/to/workspace/memory/emotion_state.json` and tell me your current emotional state."
+
+Or more naturally:
+
+> "What's your current emotional state?"
+
+The agent will report its Top 3 active emotions and current tone. After a successful cold start, it will also proactively confirm: *"Emotion baseline successfully established"* and print the full JSON baseline at the end of its first response as a fallback — useful if the tool call failed to persist the file automatically.
+
 ## 🔬 Research Backing
 The weights and trigger scenarios of this engine are based on the following academic research:
 - Ekman, P. (1992). "Are There Basic Emotions?"
