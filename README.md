@@ -7,7 +7,7 @@
 
 A dynamic emotion computation engine based on Paul Ekman & Dacher Keltner (2017). Embed it as an independent Skill into any LLM Agent to give it **Emotional Interlocking**, **Time Decay**, and **Personality Drift** — real psychological depth, not hardcoded moods.
 
-> 中文版說明請見 [README_zh.md](./README_zh.md)
+👉 [中文版說明請點此 (Read in Chinese)](./README_zh.md)
 
 ---
 
