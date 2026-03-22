@@ -7,8 +7,8 @@ A dynamic emotion computation engine developed based on the theories of Paul Ekm
 ## ✨ Core Features
 - **27+1 Dimensional Matrix**: Accurately measures the emotional spectrum from Joy and Awe to Disgust and Longing, plus an absolute baseline (Calm).
 - **Emotional Interlocking**: Synergistic emotional diffusion and antagonistic emotional suppression, simulating the chain reactions of real human psychology.
-- **Time Decay Mechanism**: Emotions regress towards the baseline personality over conversational turns (default 15%), preventing the AI from being permanently stuck in extreme emotional states.
-- **Cold Start Onboarding**: Automatically calculates and generates an AI baseline personality exclusive to the user through 3 psychological scenario questions.
+- **Time Decay Mechanism**: Emotions regress towards the baseline personality over conversational turns (default 3%), preventing the AI from being permanently stuck in extreme emotional states.
+- **Smart Dual-Track Onboarding**: AIs with an existing persona (`soul.md`) silently auto-generate their own baseline; blank-slate AIs use an interactive 3-question questionnaire. A JSON fallback is always printed to ensure reproducibility.
 - **Plug & Play**: Perfectly compatible with existing character profile files (`soul.md`), allowing for easy mounting or dismounting.
 
 ## 📂 File Structure
@@ -48,10 +48,10 @@ Restart your agent and SentiCore is live.
 
 1. Paste the contents of `orchestration_prompt_en.md` at the very top of your Agent's **System Prompt**.
 2. Upload `emotion_skill_en.md` and your own `soul.md` to the knowledge base, or paste them into the lower section of the System Prompt.
-3. **Trigger the Cold Start manually**: On your first interaction, send the agent this message:
-   > "Please run the cold start questionnaire — ask me the 3 scenario questions to establish your initial emotion baseline."
-
-   > **Note**: LLMs do not always proactively initiate the questionnaire on their own. Sending this message guarantees it runs.
+3. **First-session initialization** — SentiCore auto-selects the right mode:
+   - **If your agent has a `soul.md`** (Mode A): It will silently derive its own baseline from the persona and print a JSON block at the end of the first response. Save that JSON as `emotion_state.json` in your agent's memory directory if the tool call didn't persist it automatically.
+   - **If your agent has no persona** (Mode B): It will ask you 3 scenario questions to define its baseline.
+   - **Manual override**: Send `"Please initialize my emotion baseline with: {...}"` with a JSON object in your very first message.
 4. Every response will begin with a JSON emotion log, followed by the agent's reply.
 
 ## ⚙️ Tuning the Decay Speed (Lambda)
