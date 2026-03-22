@@ -37,7 +37,7 @@ After each interaction, call the `update_emotion_state` tool to write the curren
 On next startup, the system automatically restores the previous state with time-based decay applied (exponential decay, λ=0.05, ~14 hours to half-decay).
 If no history exists, automatically enter the onboarding flow.
 
-## 程式碼
+## Code
 
 ```python
 import json
