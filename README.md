@@ -163,7 +163,9 @@ Default: `0.05`. Edit `DECAY_LAMBDA` in the installed `emotion_skill_*.md`.
 **Dual Licensing model:**
 
 1. **Open Source (GNU AGPLv3)**: Free for personal developers, students, and open-source projects. Network service deployments must open-source the entire application under AGPLv3.
-2. **Commercial License**: For closed-source commercial products or SaaS that cannot comply with AGPLv3 copyleft — contact the author.
+2. **Commercial License**: For closed-source commercial products or SaaS that cannot comply with AGPLv3 copyleft — contact the author:
+   - **Email**: [chuchuyei@gmail.com](mailto:chuchuyei@gmail.com)
+   - **GitHub**: [github.com/chuchuyei](https://github.com/chuchuyei)
 
 ---
 

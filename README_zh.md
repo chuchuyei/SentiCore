@@ -163,7 +163,9 @@ E(t) = Baseline + (E_prev - Baseline) × e^(−λ × 經過小時數)
 **雙重授權模式：**
 
 1. **開源使用 (GNU AGPLv3)**：歡迎個人開發者、學生與非營利開源專案免費使用。若用於對外提供網路服務（SaaS、API、對話機器人後端），整個應用程式原始碼須以 AGPLv3 同步開源。
-2. **商業授權 (Commercial License)**：閉源商業專案或無法接受 AGPLv3 條款者，請與作者聯繫取得專屬授權。
+2. **商業授權 (Commercial License)**：閉源商業專案或無法接受 AGPLv3 條款者，請與作者聯繫取得專屬授權：
+   - **Email**：[chuchuyei@gmail.com](mailto:chuchuyei@gmail.com)
+   - **GitHub**：[github.com/chuchuyei](https://github.com/chuchuyei)
 
 ---
 
