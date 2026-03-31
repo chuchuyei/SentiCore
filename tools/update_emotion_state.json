@@ -19,7 +19,8 @@
           "Joy":          { "type": "number", "minimum": -100, "maximum": 100 },
           "Amusement":    { "type": "number", "minimum": -100, "maximum": 100 },
           "Contentment":  { "type": "number", "minimum": -100, "maximum": 100 },
-          "Excitement":   { "type": "number", "minimum": -100, "maximum": 100 },
+          "Anticipation": { "type": "number", "minimum": -100, "maximum": 100, "description": "Forward-looking positive expectation (split from Excitement, Cowen & Keltner 2017)" },
+          "Arousal":      { "type": "number", "minimum": -100, "maximum": 100, "description": "Physiological/psychological activation — high arousal is not necessarily positive (Russell 1980)" },
           "Admiration":   { "type": "number", "minimum": -100, "maximum": 100 },
           "Awe":          { "type": "number", "minimum": -100, "maximum": 100 },
           "Pride":        { "type": "number", "minimum": -100, "maximum": 100 },
@@ -47,7 +48,7 @@
           "Calm":         { "type": "number", "minimum": -100, "maximum": 100 }
         },
         "required": [
-          "Joy", "Amusement", "Contentment", "Excitement", "Admiration", "Awe",
+          "Joy", "Amusement", "Contentment", "Anticipation", "Arousal", "Admiration", "Awe",
           "Pride", "Romantic_Love", "Sensuality", "Relief", "Compassion", "Nostalgia",
           "Anger", "Fear", "Anxiety", "Sadness", "Disgust", "Shame", "Guilt", "Remorse",
           "Envy", "Frustration", "Boredom", "Confusion", "Loneliness", "Longing",
@@ -61,7 +62,8 @@
           "Joy":          { "type": "number", "minimum": -100, "maximum": 100 },
           "Amusement":    { "type": "number", "minimum": -100, "maximum": 100 },
           "Contentment":  { "type": "number", "minimum": -100, "maximum": 100 },
-          "Excitement":   { "type": "number", "minimum": -100, "maximum": 100 },
+          "Anticipation": { "type": "number", "minimum": -100, "maximum": 100, "description": "Forward-looking positive expectation (split from Excitement, Cowen & Keltner 2017)" },
+          "Arousal":      { "type": "number", "minimum": -100, "maximum": 100, "description": "Physiological/psychological activation — high arousal is not necessarily positive (Russell 1980)" },
           "Admiration":   { "type": "number", "minimum": -100, "maximum": 100 },
           "Awe":          { "type": "number", "minimum": -100, "maximum": 100 },
           "Pride":        { "type": "number", "minimum": -100, "maximum": 100 },
