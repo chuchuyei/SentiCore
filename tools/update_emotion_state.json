@@ -14,7 +14,7 @@
       },
       "current_emotions": {
         "type": "object",
-        "description": "Current values for all 28 emotion dimensions, each ranging from -100 to +100 (0 = neutral calm). Key 'emotions' in persisted JSON.",
+        "description": "Current values for all 30 emotion dimensions, each ranging from -100 to +100 (0 = neutral calm). Key 'emotions' in persisted JSON.",
         "properties": {
           "Joy":          { "type": "number", "minimum": -100, "maximum": 100 },
           "Amusement":    { "type": "number", "minimum": -100, "maximum": 100 },
@@ -57,7 +57,7 @@
       },
       "baseline": {
         "type": "object",
-        "description": "REQUIRED. The stable personality baseline for all 28 dimensions. Must be saved every time — used for cross-session exponential decay (remaining = baseline + (current - baseline) × e^(-0.05 × hours)). Apply Baseline Drift: new_baseline[e] = baseline[e] + (current[e] - baseline[e]) × 0.001",
+        "description": "REQUIRED. The stable personality baseline for all 30 dimensions. Must be saved every time — used for cross-session exponential decay (remaining = baseline + (current - baseline) × e^(-0.05 × hours)). Apply Baseline Drift: new_baseline[e] = baseline[e] + (current[e] - baseline[e]) × 0.001",
         "properties": {
           "Joy":          { "type": "number", "minimum": -100, "maximum": 100 },
           "Amusement":    { "type": "number", "minimum": -100, "maximum": 100 },
