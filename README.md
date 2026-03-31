@@ -1,11 +1,11 @@
-# 🧠 SentiCore™ — A 27-Dimensional Emotion Engine for AI Agents
+# 🧠 SentiCore™ — A 30-Dimensional Emotion Engine for AI Agents
 
 [![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](LICENSE)
-[![Dimensions](https://img.shields.io/badge/Emotion%20Dimensions-27%2B1-purple)](README.md)
+[![Dimensions](https://img.shields.io/badge/Emotion%20Dimensions-30-purple)](README.md)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-green)](README.md)
 [![LLM Compatible](https://img.shields.io/badge/LLM-Any-orange)](README.md)
 
-A dynamic emotion computation engine based on Paul Ekman & Dacher Keltner (2017). Embed it as an independent Skill into any LLM Agent to give it **Emotional Interlocking**, **Time Decay**, and **Personality Drift** — real psychological depth, not hardcoded moods.
+A dynamic emotion computation engine based on Cowen & Keltner (2017) and the OCC Model. Embed it as an independent Skill into any LLM Agent to give it **30-dimensional emotional tracking**, **Emotion Interlocking**, **Time Decay**, and **Personality Drift** — real psychological depth, not hardcoded moods.
 
 👉 [中文版說明請點此 (Read in Chinese)](./README_zh.md)
 
@@ -33,16 +33,16 @@ When SentiCore initializes successfully, the Agent will print this at the end of
   "trigger_event": "Baseline initialized from soul.md",
   "emotions": {
     "Joy": 60, "Romantic_Love": 50, "Contentment": 45,
-    "Excitement": 30, "Compassion": 30, "Calm": 40,
+    "Anticipation": 30, "Arousal": 20, "Compassion": 30, "Calm": 40,
     "Amusement": 25, "Admiration": 20, "Awe": 15,
     "Pride": 10, "Sensuality": 20, "Relief": 10,
     "Nostalgia": 15, "Longing": 20, "Loneliness": 10,
     "Anger": 0, "Fear": 5, "Anxiety": 5,
     "Sadness": 0, "Disgust": 0, "Shame": 0,
-    "Guilt": 0, "Envy": 5, "Frustration": 0,
+    "Guilt": 0, "Remorse": 0, "Envy": 5, "Frustration": 0,
     "Boredom": 0, "Confusion": 5, "Suffering": 0, "Contempt": 0
   },
-  "baseline": { "Joy": 60, "Romantic_Love": 50, "Calm": 40 }
+  "baseline": { "Joy": 60, "Romantic_Love": 50, "Calm": 40, "Anticipation": 20, "Arousal": 10 }
 }
 ```
 
@@ -54,7 +54,7 @@ The Agent will also announce: **"Emotion baseline successfully established"** an
 
 | Feature | Traditional AI Setup | SentiCore™ Engine |
 |---|---|---|
-| Personality | 🔴 Static, hardcoded in prompt | 🟢 27-dim matrix, dynamically computed |
+| Personality | 🔴 Static, hardcoded in prompt | 🟢 30-dim matrix, dynamically computed |
 | Time awareness | 🔴 None — same mood forever | 🟢 Real exponential decay (λ-tunable) |
 | Memory continuity | 🔴 Reset every session | 🟢 Permanent baseline drift across sessions |
 | Emotional realism | 🔴 Single emotion label | 🟢 Interlocking: joy amplifies, anger suppresses |
@@ -68,7 +68,7 @@ The Agent will also announce: **"Emotion baseline successfully established"** an
 ```mermaid
 graph LR
     A([👤 User Input]) --> B[🐍 Python: Time Decay\nCalculation]
-    B --> C[🤖 LLM: 27-Dim\nEmotion Update]
+    B --> C[🤖 LLM: 30-Dim\nEmotion Update]
     C --> D[📈 Baseline Drift\nAdjustment]
     D --> E([💾 JSON State Output\n& Final Response])
 
@@ -81,7 +81,7 @@ graph LR
 
 **Each conversation turn:**
 1. **Time Decay** — Python calculates hours elapsed since last interaction, fades all emotions toward baseline via `E(t) = Baseline + (E_prev - Baseline) × e^(−λ × Δt)`
-2. **Emotion Update** — LLM evaluates the new input and updates the 27-dim matrix (interlocking rules apply)
+2. **Emotion Update** — LLM evaluates the new input and updates the 30-dim matrix (interlocking rules apply)
 3. **Baseline Drift** — Each save nudges the baseline 0.1% toward the current emotion state (permanent character evolution)
 4. **Output** — JSON state is persisted + Agent responds with emotionally-consistent tone
 
@@ -89,8 +89,8 @@ graph LR
 
 ## ✨ Core Features
 
-- **27+1 Dimensional Matrix**: Accurately measures from Joy and Awe to Disgust and Longing, plus an absolute Calm anchor.
-- **Emotional Interlocking**: Synergistic diffusion and antagonistic suppression — simulating real psychological chain reactions.
+- **30-Dimensional Matrix**: Covers 27 Ekman/Keltner base dimensions + Remorse (OCC Model) + Anticipation + Arousal (split from Excitement), plus an absolute Calm anchor.
+- **Emotion Interaction Matrix**: 7 co-activation rules (Russell Circumplex 1980 + Cowen & Keltner 2017) — e.g. Fear suppresses Calm and Romantic_Love; Joy reduces Anxiety.
 - **Time Decay Mechanism**: Emotions regress toward baseline per conversation turn (default 3%), preventing permanent extreme states.
 - **Baseline Drift**: Every interaction subtly evolves the Agent's personality (DRIFT_RATE=0.001). It genuinely changes over time.
 - **Smart Dual-Track Onboarding**: Agents with `soul.md` silently auto-generate baseline (Mode A); blank-slate Agents use a 3-question questionnaire (Mode B).
@@ -153,8 +153,13 @@ Default: `0.05`. Edit `DECAY_LAMBDA` in the installed `emotion_skill_*.md`.
 
 ## 🔬 Research Backing
 
-- Ekman, P. (1992). "Are There Basic Emotions?"
-- Cowen, A., & Keltner, D. (2017). "Self-report captures 27 distinct categories of emotion." *PNAS*.
+- **27-dimension foundation**: Cowen, A., & Keltner, D. (2017). "Self-report captures 27 distinct categories of emotion." *PNAS*.
+- **Remorse dimension**: Ortony, A., Clore, G.L., & Collins, A. (1988). *The Cognitive Structure of Emotions.* (OCC Model)
+- **Anticipation/Arousal split**: Cowen & Keltner (2017). ibid. / Russell, J.A. (1980). "A circumplex model of affect." *JPSP*.
+- **Emotion interaction matrix**: Russell (1980). ibid. / Cowen & Keltner (2017). ibid.
+- **Time decay**: Ebbinghaus, H. (1885). *Über das Gedächtnis.* / Baddeley, A.D. & Hitch, G. (1974). "Working memory." *Psychology of Learning and Motivation.*
+- **Baseline drift**: Frederick, S. & Loewenstein, G. (1999). "Hedonic adaptation." *Well-being: The foundations of hedonic psychology.*
+- **Behavior tendency**: Barrett, L.F. (2017). *How Emotions Are Made.* / Lazarus, R.S. (1991). *Emotion and Adaptation.* (Appraisal Theory)
 
 ---
 
