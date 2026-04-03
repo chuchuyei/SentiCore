@@ -103,7 +103,7 @@ remove_from() {
   if [[ -f "$TOOLS_FILE" ]]; then
     if grep -q "SentiCore Installed" "$TOOLS_FILE"; then
       ORIG_LINES=$(grep -o 'lines=[0-9]*' "$TOOLS_FILE" | grep -o '[0-9]*')
-      head -n "$ORIG_LINES" "$TOOLS_FILE" > /tmp/senticore_tools_tmp && mv /tmp/senticore_tools_tmp "$TOOLS_FILE"
+      TMPFILE=$(mktemp) && head -n "$ORIG_LINES" "$TOOLS_FILE" > "$TMPFILE" && mv "$TMPFILE" "$TOOLS_FILE"
       echo "  ✓ Removed from TOOLS.md"
     else
       echo "  ✓ SentiCore not found in TOOLS.md, skipped"

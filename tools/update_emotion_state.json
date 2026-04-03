@@ -89,7 +89,14 @@
           "Suffering":    { "type": "number", "minimum": -100, "maximum": 100 },
           "Contempt":     { "type": "number", "minimum": -100, "maximum": 100 },
           "Calm":         { "type": "number", "minimum": -100, "maximum": 100 }
-        }
+        },
+        "required": [
+          "Joy", "Amusement", "Contentment", "Anticipation", "Arousal", "Admiration", "Awe",
+          "Pride", "Romantic_Love", "Sensuality", "Relief", "Compassion", "Nostalgia",
+          "Anger", "Fear", "Anxiety", "Sadness", "Disgust", "Shame", "Guilt", "Remorse",
+          "Envy", "Frustration", "Boredom", "Confusion", "Loneliness", "Longing",
+          "Suffering", "Contempt", "Calm"
+        ]
       },
       "current_tone": {
         "type": "string",
