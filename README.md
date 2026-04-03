@@ -42,7 +42,14 @@ When SentiCore initializes successfully, the Agent will print this at the end of
     "Guilt": 0, "Remorse": 0, "Envy": 5, "Frustration": 0,
     "Boredom": 0, "Confusion": 5, "Suffering": 0, "Contempt": 0
   },
-  "baseline": { "Joy": 60, "Romantic_Love": 50, "Calm": 40, "Anticipation": 20, "Arousal": 10 }
+  "baseline": {
+    "Joy": 60, "Amusement": 25, "Contentment": 45, "Anticipation": 30, "Arousal": 20,
+    "Admiration": 20, "Awe": 15, "Pride": 10, "Romantic_Love": 50, "Sensuality": 20,
+    "Relief": 10, "Compassion": 30, "Nostalgia": 15, "Anger": 0, "Fear": 5,
+    "Anxiety": 5, "Sadness": 0, "Disgust": 0, "Shame": 0, "Guilt": 0,
+    "Remorse": 0, "Envy": 5, "Frustration": 0, "Boredom": 0, "Confusion": 5,
+    "Loneliness": 10, "Longing": 20, "Suffering": 0, "Contempt": 0, "Calm": 40
+  }
 }
 ```
 

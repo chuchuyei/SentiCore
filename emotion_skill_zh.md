@@ -61,6 +61,15 @@ decayed_value[e] = baseline[e] + (emotions[e] - baseline[e]) × decay_factor
 | Romantic_Love > 80 | → Loneliness ↓，Anxiety ↓ |
 | Shame | → Pride ↓（自我評價受損） |
 | Remorse | → Guilt ↑（後悔強化道德感） |
+| Disgust | → Sensuality ↓，Romantic_Love ↓（厭惡抑制親密與感官） |
+| Nostalgia | → Longing ↑，Sadness ↑（輕微）（懷舊喚起渴望與淡淡憂傷） |
+| Envy | → Contentment ↓，Frustration ↑（嫉妒侵蝕滿足感） |
+| Boredom > 60 | → Arousal ↓，Anticipation ↓（無聊壓低激活與期待） |
+| Suffering > 70 | → Joy ↓，Loneliness ↑（痛苦壓制愉悅、強化孤立感） |
+| Contempt | → Compassion ↓，Admiration ↓（蔑視排斥同理與敬佩） |
+| Pride > 80 | → Contentment ↑，Shame ↓（高度自尊提升滿足、壓低羞恥） |
+| Relief | → Anxiety ↓，Fear ↓（解脫直接消減恐懼與焦慮） |
+| Awe / Admiration | → Contempt ↓（敬畏排斥蔑視） |
 
 ### 3.3 回合衰減 (Per-Turn Decay)
 將當前所有數值向 Baseline 回歸 **3%**：
