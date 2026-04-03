@@ -113,7 +113,8 @@ graph LR
 | `emotion_skill_en/zh.md` | The computation engine — upload to knowledge base |
 | `install.sh` / `remove.sh` | One-command installer/uninstaller for OpenClaw users |
 | `tools/update_emotion_state.json` | Function Calling schema for persistent emotion memory |
-| `templates/sample_soul.md` | Ready-to-use soul character template |
+| `templates/sample_soul.md` | Character template — quirky deep-sea lobster persona |
+| `templates/sample_soul_assistant.md` | Character template — general-purpose warm analyst |
 
 ---
 

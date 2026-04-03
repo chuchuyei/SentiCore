@@ -113,7 +113,8 @@ graph LR
 | `emotion_skill_zh/en.md` | 情緒運算引擎——上傳至知識庫 |
 | `install.sh` / `remove.sh` | OpenClaw 用戶一鍵安裝／移除腳本 |
 | `tools/update_emotion_state.json` | Function Calling Schema，用於情緒狀態持久化 |
-| `templates/sample_soul.md` | 深海龍蝦角色靈魂範本，可直接修改使用 |
+| `templates/sample_soul.md` | 角色範本——深海龍蝦（個性鮮明） |
+| `templates/sample_soul_assistant.md` | 角色範本——溫暖分析師（通用型） |
 
 ---
 
