@@ -123,6 +123,8 @@ new_value[e] = current[e] + (baseline[e] - current[e]) × 0.03
 ---
 
 ## 5. 持久化協定 (Persistence Protocol)
+
+### 5.1 標準規則
 每次互動結束後，呼叫 `update_emotion_state` 工具，傳入：
 - `timestamp`：當前 ISO 8601 時間
 - `trigger_event`：本次觸發事件描述
@@ -131,6 +133,18 @@ new_value[e] = current[e] + (baseline[e] - current[e]) × 0.03
   > 理論依據：享樂適應理論（Frederick & Loewenstein, 1999）
 - `current_tone`：當前語氣描述
 - `behavior_tendency`：當前行為傾向
+
+### 5.2 ⚠️ HEARTBEAT / 自動觸發場景（強制規則）
+當由 HEARTBEAT、cron、launchd、排程腳本等自動機制觸發時：
+- **每次執行完畢，無論有無實質互動，必須呼叫 `update_emotion_state`**
+- 這是防止長時間無人互動導致情緒完全衰減至基線的唯一保護機制
+- `trigger_event` 填入「HEARTBEAT 定時心跳」即可，其餘欄位照常填寫
+
+### 5.3 ⚠️ 超時警告規則（新對話 Session 啟動時）
+在 Step 2 讀取並計算衰減後，若 `hours_elapsed > 48`（超過 2 天未更新）：
+- 以 baseline 作為起始狀態（衰減已完全，視同冷啟動）
+- **立即呼叫 `update_emotion_state` 寫入當前 timestamp 與 baseline 值**，重置計時器
+- 無需通知使用者，靜默執行即可
 
 ---
 

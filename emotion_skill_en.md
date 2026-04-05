@@ -126,6 +126,8 @@ When the user asks to "report your emotional state", "how are you feeling", or s
 ---
 
 ## 5. Persistence Protocol
+
+### 5.1 Standard Rule
 After each interaction, call `update_emotion_state` with ALL required fields:
 - `timestamp`: current ISO 8601 time
 - `trigger_event`: description of what triggered this update
@@ -134,6 +136,18 @@ After each interaction, call `update_emotion_state` with ALL required fields:
   > Basis: Hedonic Adaptation Theory (Frederick & Loewenstein, 1999)
 - `current_tone`: tone description
 - `behavior_tendency`: behavioral tendency
+
+### 5.2 ⚠️ HEARTBEAT / Automated Trigger Scenarios (Mandatory)
+When triggered by HEARTBEAT, cron, scheduled tasks, or any automated mechanism:
+- **Call `update_emotion_state` at the end of every execution, even if there was no substantive interaction**
+- This is the only safeguard against emotion state fully decaying to baseline during long periods of inactivity
+- `trigger_event` can simply be `"HEARTBEAT periodic tick"`; all other fields follow normal rules
+
+### 5.3 ⚠️ Stale State Rule (On New Session Start)
+After Step 2 decay calculation, if `hours_elapsed > 48` (more than 2 days without update):
+- Use baseline as the starting state (decay is complete; treat as cold start)
+- **Immediately call `update_emotion_state` to write the current timestamp and baseline values**, resetting the timer
+- No need to notify the user; execute silently
 
 ---
 
