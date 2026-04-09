@@ -1,6 +1,6 @@
 #!/bin/bash
 # SentiCore Installer for Hermes Agent
-# Usage: bash install-hermes.sh [--lang en|zh] [--profile PROFILE_NAME]
+# Usage: bash install-hermes.sh [--lang en|zh] [--profile PROFILE_NAME] [--dry-run]
 #
 # Installs SentiCore emotion engine into a Hermes Agent profile.
 # If no profile is specified, installs to the default profile.
@@ -20,6 +20,7 @@ error() { echo -e "${RED}[✗]${NC} $1"; }
 
 LANG_CODE="zh"
 PROFILE=""
+DRY_RUN=false
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 
 # Parse arguments
@@ -33,6 +34,10 @@ while [[ $# -gt 0 ]]; do
       PROFILE="$2"
       shift 2
       ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
     -h|--help)
       echo "SentiCore Installer for Hermes Agent"
       echo ""
@@ -41,18 +46,20 @@ while [[ $# -gt 0 ]]; do
       echo "Options:"
       echo "  --lang en|zh       Language (default: zh)"
       echo "  --profile NAME     Hermes profile name (default: default profile)"
+      echo "  --dry-run          Preview changes without modifying any files"
       echo "  -h, --help         Show this help"
       echo ""
       echo "Examples:"
-      echo "  bash install-hermes.sh                        # Install to default profile (Chinese)"
-      echo "  bash install-hermes.sh --lang en              # Install in English"
-      echo "  bash install-hermes.sh --profile my-agent     # Install to specific profile"
-      echo "  bash install-hermes.sh --profile sec --lang zh # Install to 'sec' profile in Chinese"
+      echo "  bash install-hermes.sh --dry-run                  # Preview installation"
+      echo "  bash install-hermes.sh                            # Install to default profile (Chinese)"
+      echo "  bash install-hermes.sh --lang en                  # Install in English"
+      echo "  bash install-hermes.sh --profile my-agent         # Install to specific profile"
+      echo "  bash install-hermes.sh --profile sec --lang zh    # Install to 'sec' profile in Chinese"
       exit 0
       ;;
     *)
       error "Unknown option: $1"
-      echo "Usage: bash install-hermes.sh [--lang en|zh] [--profile PROFILE_NAME]"
+      echo "Usage: bash install-hermes.sh [--lang en|zh] [--profile PROFILE_NAME] [--dry-run]"
       exit 1
       ;;
   esac
@@ -70,12 +77,29 @@ EMOTION_SKILL="$SCRIPT_DIR/emotion_skill_${LANG_CODE}.md"
 TOOL_SCHEMA="$SCRIPT_DIR/tools/update_emotion_state.json"
 SAMPLE_SOUL="$SCRIPT_DIR/templates/sample_soul.md"
 
+info "Verifying source files..."
+ALL_OK=true
 for f in "$ORCHESTRATION" "$EMOTION_SKILL" "$TOOL_SCHEMA"; do
-  if [[ ! -f "$f" ]]; then
+  if [[ -f "$f" ]]; then
+    log "Found: $(basename "$f")"
+  else
     error "Missing: $f"
-    exit 1
+    ALL_OK=false
   fi
 done
+if [[ "$ALL_OK" == false ]]; then
+  error "Source files incomplete. Aborting."
+  exit 1
+fi
+
+# Verify placeholder exists in emotion_skill
+if ! grep -q "EMOTION_STATE_PATH_PLACEHOLDER" "$EMOTION_SKILL"; then
+  warn "emotion_skill does not contain EMOTION_STATE_PATH_PLACEHOLDER"
+  warn "Emotion state path will be appended as a separate config block instead"
+  USE_PLACEHOLDER=false
+else
+  USE_PLACEHOLDER=true
+fi
 
 # ─── Check Hermes installation ────────────────────────
 if ! command -v hermes &>/dev/null; then
@@ -87,12 +111,14 @@ fi
 echo ""
 echo "╔══════════════════════════════════════════╗"
 echo "║  SentiCore × Hermes Agent Installer      ║"
+if [[ "$DRY_RUN" == true ]]; then
+echo "║  ⚠  DRY RUN — no files will be changed  ║"
+fi
 echo "╚══════════════════════════════════════════╝"
 echo ""
 
 # ─── Determine target profile directory ───────────────
 if [[ -z "$PROFILE" ]]; then
-  # List profiles and let user choose
   PROFILES=()
   PROFILES+=("default")
   if [[ -d "$HERMES_HOME/profiles" ]]; then
@@ -153,11 +179,60 @@ fi
 # ─── Check for existing SentiCore ─────────────────────
 if [[ -f "$SOUL_FILE" ]] && grep -q "SentiCore" "$SOUL_FILE"; then
   warn "SentiCore already installed in this profile's SOUL.md"
-  read -rp "Reinstall? (y/N): " REINSTALL
-  if [[ "$REINSTALL" != "y" && "$REINSTALL" != "Y" ]]; then
-    echo "Aborted."
-    exit 0
+  if [[ "$DRY_RUN" == true ]]; then
+    info "Dry run: would remove previous SentiCore block and reinstall"
+  else
+    read -rp "Reinstall? (y/N): " REINSTALL
+    if [[ "$REINSTALL" != "y" && "$REINSTALL" != "Y" ]]; then
+      echo "Aborted."
+      exit 0
+    fi
   fi
+fi
+
+# ─── Dry run summary ─────────────────────────────────
+if [[ "$DRY_RUN" == true ]]; then
+  echo ""
+  echo "═══ Dry Run Preview ═══"
+  echo ""
+  if [[ "$HAS_SOUL" == true ]]; then
+    echo "  Would MODIFY: $SOUL_FILE"
+    echo "    → Append SentiCore emotion engine block (~300 lines)"
+  else
+    echo "  Would CREATE: $SOUL_FILE"
+    echo "    → Sample personality + SentiCore emotion engine"
+  fi
+  echo "  Would CREATE: $MEMORY_DIR/ (if not exists)"
+  echo "  Emotion state: $EMOTION_STATE (created on first chat)"
+  echo ""
+  echo "  Source files:"
+  echo "    Orchestration: $(wc -l < "$ORCHESTRATION" | tr -d ' ') lines"
+  echo "    Emotion Skill: $(wc -l < "$EMOTION_SKILL" | tr -d ' ') lines"
+  echo "    Tool Schema:   $(wc -l < "$TOOL_SCHEMA" | tr -d ' ') lines"
+  echo ""
+  echo "  No files were modified."
+  echo "  Run without --dry-run to install."
+  echo ""
+  exit 0
+fi
+
+# ─── Backup existing SOUL.md ─────────────────────────
+if [[ "$HAS_SOUL" == true ]]; then
+  BACKUP="$SOUL_FILE.pre-senticore.bak"
+  cp "$SOUL_FILE" "$BACKUP"
+  log "Backed up SOUL.md → $(basename "$BACKUP")"
+fi
+
+# ─── Build emotion skill content ─────────────────────
+if [[ "$USE_PLACEHOLDER" == true ]]; then
+  EMOTION_CONTENT=$(sed "s|EMOTION_STATE_PATH_PLACEHOLDER|${EMOTION_STATE}|g" "$EMOTION_SKILL")
+else
+  EMOTION_CONTENT=$(cat "$EMOTION_SKILL")
+  EMOTION_CONTENT="${EMOTION_CONTENT}
+
+### Emotion State Persistence
+Emotion state file path: \`${EMOTION_STATE}\`
+Read this file at session start. Write updated state after each response."
 fi
 
 # ─── Build SOUL.md ────────────────────────────────────
@@ -165,9 +240,18 @@ info "Building SOUL.md..."
 
 SCHEMA=$(cat "$TOOL_SCHEMA")
 
+# Rollback function
+rollback() {
+  if [[ -f "$BACKUP" ]]; then
+    cp "$BACKUP" "$SOUL_FILE"
+    warn "Installation failed. SOUL.md restored from backup."
+  fi
+  exit 1
+}
+trap rollback ERR
+
 if [[ "$HAS_SOUL" == true ]]; then
-  # Append SentiCore to existing SOUL.md
-  # First, remove any previous SentiCore block
+  # Remove any previous SentiCore block
   if grep -q "<!-- SentiCore Start -->" "$SOUL_FILE"; then
     sed -i.bak '/<!-- SentiCore Start -->/,/<!-- SentiCore End -->/d' "$SOUL_FILE"
     rm -f "$SOUL_FILE.bak"
@@ -180,18 +264,15 @@ if [[ "$HAS_SOUL" == true ]]; then
 
 ---
 
-## SentiCore — 情緒引擎
-
-### 模組載入
-你是一個由雙模組驅動的 AI 實體。SOUL.md 定義你的靈魂，SentiCore 定義你的情緒。
+## SentiCore — Emotion Engine
 
 $(cat "$ORCHESTRATION")
 
 ---
 
-$(cat "$EMOTION_SKILL" | sed "s|EMOTION_STATE_PATH_PLACEHOLDER|${EMOTION_STATE}|g")
+${EMOTION_CONTENT}
 
-### update_emotion_state 工具 Schema
+### update_emotion_state Tool Schema
 \`\`\`json
 ${SCHEMA}
 \`\`\`
@@ -202,7 +283,7 @@ SENTIEOF
   log "SentiCore appended to existing SOUL.md"
 
 else
-  # No existing SOUL.md — create from scratch with sample soul
+  # No existing SOUL.md — create from scratch
   if [[ -f "$SAMPLE_SOUL" ]]; then
     info "No SOUL.md found. Creating from sample template..."
     cp "$SAMPLE_SOUL" "$SOUL_FILE"
@@ -236,7 +317,7 @@ $(cat "$ORCHESTRATION")
 
 ---
 
-$(cat "$EMOTION_SKILL" | sed "s|EMOTION_STATE_PATH_PLACEHOLDER|${EMOTION_STATE}|g")
+${EMOTION_CONTENT}
 
 ### update_emotion_state Tool Schema
 \`\`\`json
@@ -249,9 +330,23 @@ SENTIEOF
   log "SOUL.md created with SentiCore"
 fi
 
+# Clear trap after successful SOUL.md write
+trap - ERR
+
 # ─── Create memory directory ─────────────────────────
 mkdir -p "$MEMORY_DIR"
 log "Memory directory ready: $MEMORY_DIR"
+
+# ─── Verify installation ─────────────────────────────
+if grep -q "<!-- SentiCore Start -->" "$SOUL_FILE" && grep -q "<!-- SentiCore End -->" "$SOUL_FILE"; then
+  log "Installation verified: SentiCore block found in SOUL.md"
+else
+  error "Installation verification failed: SentiCore markers not found"
+  rollback
+fi
+
+FINAL_LINES=$(wc -l < "$SOUL_FILE" | tr -d ' ')
+SENTICORE_LINES=$(sed -n '/<!-- SentiCore Start -->/,/<!-- SentiCore End -->/p' "$SOUL_FILE" | wc -l | tr -d ' ')
 
 # ─── Summary ─────────────────────────────────────────
 echo ""
@@ -262,8 +357,9 @@ echo ""
 log "SentiCore installed to Hermes profile: $PROFILE"
 echo ""
 echo "  Files:"
-echo "    SOUL.md      → $SOUL_FILE"
-echo "    Emotion state → $EMOTION_STATE (created on first chat)"
+echo "    SOUL.md        → $SOUL_FILE ($FINAL_LINES lines, SentiCore: $SENTICORE_LINES lines)"
+echo "    Backup         → ${BACKUP:-none (new file)}"
+echo "    Emotion state  → $EMOTION_STATE (created on first chat)"
 echo ""
 echo "  Next steps:"
 if [[ "$PROFILE" == "default" ]]; then
@@ -277,6 +373,9 @@ echo "  On first conversation, SentiCore will:"
 echo "    1. Ask 3 introspective questions"
 echo "    2. Initialize 30-dimension emotion baseline"
 echo "    3. Save emotion state to $EMOTION_STATE"
+echo ""
+echo "  To uninstall: remove the <!-- SentiCore Start/End --> block from SOUL.md"
+echo "  To rollback:  cp $SOUL_FILE.pre-senticore.bak $SOUL_FILE"
 echo ""
 echo "  Documentation: https://github.com/chuchuyei/SentiCore"
 echo ""
