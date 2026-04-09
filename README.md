@@ -72,6 +72,10 @@ This automatically:
 - Sets up emotion state persistence
 - Configures the 30-dimension engine
 
+Options:
+- `--show-emotions` — Display emotion JSON in responses (default: hidden, emotions expressed through tone)
+- `--dry-run` — Preview changes without modifying files
+
 Works with any Hermes profile. Pair with [Honcho](https://github.com/plastic-labs/honcho) for cross-session memory.
 
 > See [Hermes + SentiCore Integration Guide](./docs/hermes-senticore-guide.md) for the full walkthrough.

@@ -72,6 +72,10 @@ bash install-hermes.sh --profile my-agent --lang zh
 - 設定情緒狀態持久化
 - 配置 30 維情緒引擎
 
+選項：
+- `--show-emotions` — 在回覆中顯示情緒 JSON（預設隱藏，情緒透過語氣表達）
+- `--dry-run` — 預覽變更，不實際修改檔案
+
 支援任何 Hermes profile。搭配 [Honcho](https://github.com/plastic-labs/honcho) 可實現跨 Session 記憶。
 
 > 完整教學請見 [Hermes + SentiCore 整合指南](./docs/hermes-senticore-guide.md)

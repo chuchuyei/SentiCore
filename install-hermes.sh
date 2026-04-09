@@ -21,6 +21,7 @@ error() { echo -e "${RED}[✗]${NC} $1"; }
 LANG_CODE="zh"
 PROFILE=""
 DRY_RUN=false
+SHOW_EMOTIONS=false
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 
 # Parse arguments
@@ -38,6 +39,10 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN=true
       shift
       ;;
+    --show-emotions)
+      SHOW_EMOTIONS=true
+      shift
+      ;;
     -h|--help)
       echo "SentiCore Installer for Hermes Agent"
       echo ""
@@ -47,6 +52,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --lang en|zh       Language (default: zh)"
       echo "  --profile NAME     Hermes profile name (default: default profile)"
       echo "  --dry-run          Preview changes without modifying any files"
+      echo "  --show-emotions    Show emotion JSON in agent responses (default: hidden)"
       echo "  -h, --help         Show this help"
       echo ""
       echo "Examples:"
@@ -55,6 +61,7 @@ while [[ $# -gt 0 ]]; do
       echo "  bash install-hermes.sh --lang en                  # Install in English"
       echo "  bash install-hermes.sh --profile my-agent         # Install to specific profile"
       echo "  bash install-hermes.sh --profile sec --lang zh    # Install to 'sec' profile in Chinese"
+      echo "  bash install-hermes.sh --show-emotions             # Show emotion JSON in responses"
       exit 0
       ;;
     *)
@@ -235,6 +242,31 @@ Emotion state file path: \`${EMOTION_STATE}\`
 Read this file at session start. Write updated state after each response."
 fi
 
+# ─── Build emotion output rule ────────────────────────
+if [[ "$SHOW_EMOTIONS" == true ]]; then
+  EMOTION_OUTPUT_RULE='### Emotion Output
+Show the emotion JSON state at the beginning of each response in a code block.
+This lets the user see the emotion calculations in real-time.
+```json
+{
+  "Emotion_Updates": {"emotion1": "+X", "emotion2": "-Y"},
+  "Interaction_Applied": ["interaction rule (if any)"],
+  "Current_Top_3": ["EmotionA (value)", "EmotionB (value)", "EmotionC (value)"],
+  "Current_Tone": "speaking tone derived from Top 3 emotions",
+  "Behavior_Tendency": "current behavior tendency"
+}
+```'
+else
+  EMOTION_OUTPUT_RULE='### Emotion Output
+**Emotion JSON is for internal calculation only. NEVER output it in your response.**
+The user does not need to see emotion data. Express emotions naturally through tone, word choice, and behavior.
+
+**Forbidden:**
+- Do NOT output JSON in responses
+- Do NOT quote or repeat the user'"'"'s message
+- Do NOT add code blocks at the beginning of responses'
+fi
+
 # ─── Build SOUL.md ────────────────────────────────────
 info "Building SOUL.md..."
 
@@ -271,6 +303,8 @@ $(cat "$ORCHESTRATION")
 ---
 
 ${EMOTION_CONTENT}
+
+${EMOTION_OUTPUT_RULE}
 
 ### update_emotion_state Tool Schema
 \`\`\`json
@@ -318,6 +352,8 @@ $(cat "$ORCHESTRATION")
 ---
 
 ${EMOTION_CONTENT}
+
+${EMOTION_OUTPUT_RULE}
 
 ### update_emotion_state Tool Schema
 \`\`\`json
