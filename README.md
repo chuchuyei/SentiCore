@@ -57,6 +57,27 @@ The Agent will also announce: **"Emotion baseline successfully established"** an
 
 ---
 
+## 🤖 Hermes Agent Integration
+
+**One-command install for [Hermes Agent](https://github.com/NousResearch/hermes-agent) users:**
+
+```bash
+git clone https://github.com/chuchuyei/SentiCore.git
+cd SentiCore
+bash install-hermes.sh --profile my-agent --lang en
+```
+
+This automatically:
+- Appends SentiCore to your profile's SOUL.md
+- Sets up emotion state persistence
+- Configures the 30-dimension engine
+
+Works with any Hermes profile. Pair with [Honcho](https://github.com/plastic-labs/honcho) for cross-session memory.
+
+> See [Hermes + SentiCore Integration Guide](./docs/hermes-senticore-guide.md) for the full walkthrough.
+
+---
+
 ## ⚡ Why SentiCore?
 
 | Feature | Traditional AI Setup | SentiCore™ Engine |

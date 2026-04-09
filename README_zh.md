@@ -57,6 +57,27 @@ Agent 同時會主動宣告：**「情緒基線已建立完成」**，並簡述�
 
 ---
 
+## 🤖 Hermes Agent 整合
+
+**[Hermes Agent](https://github.com/NousResearch/hermes-agent) 用戶一鍵安裝：**
+
+```bash
+git clone https://github.com/chuchuyei/SentiCore.git
+cd SentiCore
+bash install-hermes.sh --profile my-agent --lang zh
+```
+
+自動完成：
+- 將 SentiCore 追加到 Profile 的 SOUL.md
+- 設定情緒狀態持久化
+- 配置 30 維情緒引擎
+
+支援任何 Hermes profile。搭配 [Honcho](https://github.com/plastic-labs/honcho) 可實現跨 Session 記憶。
+
+> 完整教學請見 [Hermes + SentiCore 整合指南](./docs/hermes-senticore-guide.md)
+
+---
+
 ## ⚡ 為什麼選擇 SentiCore？
 
 | 特性 | 傳統 AI 設定 | SentiCore™ 引擎 |

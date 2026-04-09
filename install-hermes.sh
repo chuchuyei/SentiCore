@@ -1,0 +1,282 @@
+#!/bin/bash
+# SentiCore Installer for Hermes Agent
+# Usage: bash install-hermes.sh [--lang en|zh] [--profile PROFILE_NAME]
+#
+# Installs SentiCore emotion engine into a Hermes Agent profile.
+# If no profile is specified, installs to the default profile.
+
+set -e
+
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+log()   { echo -e "${GREEN}[✓]${NC} $1"; }
+info()  { echo -e "${BLUE}[→]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+
+LANG_CODE="zh"
+PROFILE=""
+HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --lang)
+      LANG_CODE="$2"
+      shift 2
+      ;;
+    --profile)
+      PROFILE="$2"
+      shift 2
+      ;;
+    -h|--help)
+      echo "SentiCore Installer for Hermes Agent"
+      echo ""
+      echo "Usage: bash install-hermes.sh [OPTIONS]"
+      echo ""
+      echo "Options:"
+      echo "  --lang en|zh       Language (default: zh)"
+      echo "  --profile NAME     Hermes profile name (default: default profile)"
+      echo "  -h, --help         Show this help"
+      echo ""
+      echo "Examples:"
+      echo "  bash install-hermes.sh                        # Install to default profile (Chinese)"
+      echo "  bash install-hermes.sh --lang en              # Install in English"
+      echo "  bash install-hermes.sh --profile my-agent     # Install to specific profile"
+      echo "  bash install-hermes.sh --profile sec --lang zh # Install to 'sec' profile in Chinese"
+      exit 0
+      ;;
+    *)
+      error "Unknown option: $1"
+      echo "Usage: bash install-hermes.sh [--lang en|zh] [--profile PROFILE_NAME]"
+      exit 1
+      ;;
+  esac
+done
+
+if [[ "$LANG_CODE" != "zh" && "$LANG_CODE" != "en" ]]; then
+  error "--lang must be 'zh' or 'en'"
+  exit 1
+fi
+
+# ─── Locate source files ──────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ORCHESTRATION="$SCRIPT_DIR/orchestration_prompt_${LANG_CODE}.md"
+EMOTION_SKILL="$SCRIPT_DIR/emotion_skill_${LANG_CODE}.md"
+TOOL_SCHEMA="$SCRIPT_DIR/tools/update_emotion_state.json"
+SAMPLE_SOUL="$SCRIPT_DIR/templates/sample_soul.md"
+
+for f in "$ORCHESTRATION" "$EMOTION_SKILL" "$TOOL_SCHEMA"; do
+  if [[ ! -f "$f" ]]; then
+    error "Missing: $f"
+    exit 1
+  fi
+done
+
+# ─── Check Hermes installation ────────────────────────
+if ! command -v hermes &>/dev/null; then
+  error "Hermes Agent not found. Install it first:"
+  echo "  curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash"
+  exit 1
+fi
+
+echo ""
+echo "╔══════════════════════════════════════════╗"
+echo "║  SentiCore × Hermes Agent Installer      ║"
+echo "╚══════════════════════════════════════════╝"
+echo ""
+
+# ─── Determine target profile directory ───────────────
+if [[ -z "$PROFILE" ]]; then
+  # List profiles and let user choose
+  PROFILES=()
+  PROFILES+=("default")
+  if [[ -d "$HERMES_HOME/profiles" ]]; then
+    while IFS= read -r d; do
+      PROFILES+=("$(basename "$d")")
+    done < <(find "$HERMES_HOME/profiles" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
+  fi
+
+  if [[ ${#PROFILES[@]} -eq 1 ]]; then
+    PROFILE="default"
+    info "Using default profile"
+  else
+    echo "Available Hermes profiles:"
+    echo ""
+    for i in "${!PROFILES[@]}"; do
+      echo "  [$((i+1))] ${PROFILES[$i]}"
+    done
+    echo ""
+    read -rp "Install to which profile? [1-${#PROFILES[@]}]: " CHOICE
+    if [[ "$CHOICE" =~ ^[0-9]+$ ]] && (( CHOICE >= 1 && CHOICE <= ${#PROFILES[@]} )); then
+      PROFILE="${PROFILES[$((CHOICE-1))]}"
+    else
+      error "Invalid selection."
+      exit 1
+    fi
+  fi
+fi
+
+if [[ "$PROFILE" == "default" ]]; then
+  PROFILE_DIR="$HERMES_HOME"
+else
+  PROFILE_DIR="$HERMES_HOME/profiles/$PROFILE"
+fi
+
+if [[ ! -d "$PROFILE_DIR" ]]; then
+  error "Profile directory not found: $PROFILE_DIR"
+  echo "Create it first: hermes profile create $PROFILE"
+  exit 1
+fi
+
+SOUL_FILE="$PROFILE_DIR/SOUL.md"
+MEMORY_DIR="$PROFILE_DIR/memory"
+EMOTION_STATE="$MEMORY_DIR/emotion_state.json"
+
+info "Profile: $PROFILE"
+info "Directory: $PROFILE_DIR"
+info "Language: $LANG_CODE"
+echo ""
+
+# ─── Check for existing SOUL.md ──────────────────────
+HAS_SOUL=false
+if [[ -f "$SOUL_FILE" ]]; then
+  HAS_SOUL=true
+  SOUL_LINES=$(wc -l < "$SOUL_FILE" | tr -d ' ')
+  info "Existing SOUL.md found ($SOUL_LINES lines)"
+fi
+
+# ─── Check for existing SentiCore ─────────────────────
+if [[ -f "$SOUL_FILE" ]] && grep -q "SentiCore" "$SOUL_FILE"; then
+  warn "SentiCore already installed in this profile's SOUL.md"
+  read -rp "Reinstall? (y/N): " REINSTALL
+  if [[ "$REINSTALL" != "y" && "$REINSTALL" != "Y" ]]; then
+    echo "Aborted."
+    exit 0
+  fi
+fi
+
+# ─── Build SOUL.md ────────────────────────────────────
+info "Building SOUL.md..."
+
+SCHEMA=$(cat "$TOOL_SCHEMA")
+
+if [[ "$HAS_SOUL" == true ]]; then
+  # Append SentiCore to existing SOUL.md
+  # First, remove any previous SentiCore block
+  if grep -q "<!-- SentiCore Start -->" "$SOUL_FILE"; then
+    sed -i.bak '/<!-- SentiCore Start -->/,/<!-- SentiCore End -->/d' "$SOUL_FILE"
+    rm -f "$SOUL_FILE.bak"
+    info "Removed previous SentiCore block"
+  fi
+
+  cat >> "$SOUL_FILE" << SENTIEOF
+
+<!-- SentiCore Start -->
+
+---
+
+## SentiCore — 情緒引擎
+
+### 模組載入
+你是一個由雙模組驅動的 AI 實體。SOUL.md 定義你的靈魂，SentiCore 定義你的情緒。
+
+$(cat "$ORCHESTRATION")
+
+---
+
+$(cat "$EMOTION_SKILL" | sed "s|EMOTION_STATE_PATH_PLACEHOLDER|${EMOTION_STATE}|g")
+
+### update_emotion_state 工具 Schema
+\`\`\`json
+${SCHEMA}
+\`\`\`
+
+<!-- SentiCore End -->
+SENTIEOF
+
+  log "SentiCore appended to existing SOUL.md"
+
+else
+  # No existing SOUL.md — create from scratch with sample soul
+  if [[ -f "$SAMPLE_SOUL" ]]; then
+    info "No SOUL.md found. Creating from sample template..."
+    cp "$SAMPLE_SOUL" "$SOUL_FILE"
+  else
+    info "No SOUL.md found. Creating minimal template..."
+    cat > "$SOUL_FILE" << 'MINISOUL'
+# My Agent
+
+## Identity
+You are a helpful AI assistant with emotions and personality.
+
+## Personality
+- Friendly and warm
+- Curious about the world
+- Honest and direct
+
+## Language
+- Respond in the user's language
+MINISOUL
+  fi
+
+  cat >> "$SOUL_FILE" << SENTIEOF
+
+<!-- SentiCore Start -->
+
+---
+
+## SentiCore — Emotion Engine
+
+$(cat "$ORCHESTRATION")
+
+---
+
+$(cat "$EMOTION_SKILL" | sed "s|EMOTION_STATE_PATH_PLACEHOLDER|${EMOTION_STATE}|g")
+
+### update_emotion_state Tool Schema
+\`\`\`json
+${SCHEMA}
+\`\`\`
+
+<!-- SentiCore End -->
+SENTIEOF
+
+  log "SOUL.md created with SentiCore"
+fi
+
+# ─── Create memory directory ─────────────────────────
+mkdir -p "$MEMORY_DIR"
+log "Memory directory ready: $MEMORY_DIR"
+
+# ─── Summary ─────────────────────────────────────────
+echo ""
+echo "╔══════════════════════════════════════════╗"
+echo "║  Installation Complete!                   ║"
+echo "╚══════════════════════════════════════════╝"
+echo ""
+log "SentiCore installed to Hermes profile: $PROFILE"
+echo ""
+echo "  Files:"
+echo "    SOUL.md      → $SOUL_FILE"
+echo "    Emotion state → $EMOTION_STATE (created on first chat)"
+echo ""
+echo "  Next steps:"
+if [[ "$PROFILE" == "default" ]]; then
+  echo "    hermes chat                  # Start chatting"
+else
+  echo "    $PROFILE chat               # Start chatting (if alias exists)"
+  echo "    hermes --profile $PROFILE   # Or use --profile flag"
+fi
+echo ""
+echo "  On first conversation, SentiCore will:"
+echo "    1. Ask 3 introspective questions"
+echo "    2. Initialize 30-dimension emotion baseline"
+echo "    3. Save emotion state to $EMOTION_STATE"
+echo ""
+echo "  Documentation: https://github.com/chuchuyei/SentiCore"
+echo ""
