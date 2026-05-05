@@ -184,8 +184,28 @@ if [[ -f "$SOUL_FILE" ]]; then
 fi
 
 # ─── Check for existing SentiCore ─────────────────────
+NEW_VERSION=$(grep -m1 "^# Version:" "$EMOTION_SKILL" | sed 's/^# Version:[[:space:]]*//' | tr -d ' ')
 if [[ -f "$SOUL_FILE" ]] && grep -q "SentiCore" "$SOUL_FILE"; then
   warn "SentiCore already installed in this profile's SOUL.md"
+
+  # Detect installed version
+  INSTALLED_VERSION=$(sed -n '/<!-- SentiCore Start -->/,/<!-- SentiCore End -->/p' "$SOUL_FILE" \
+    | grep -m1 "^# Version:" | sed 's/^# Version:[[:space:]]*//' | tr -d ' ')
+
+  if [[ -n "$INSTALLED_VERSION" && -n "$NEW_VERSION" ]]; then
+    info "Installed version: $INSTALLED_VERSION  →  New version: $NEW_VERSION"
+    if [[ "$INSTALLED_VERSION" != "$NEW_VERSION" ]]; then
+      warn "Version change detected. Notes for upgrades crossing v2.1.0:"
+      warn "  • per-turn 3% decay removed; decay is now wall-clock & only on Class A input"
+      warn "  • new fields: antagonist_locks, Input_Class, Decay_Applied"
+      warn "  • HEARTBEAT (5.2) and 48h reset (5.3) rules removed"
+      warn "  • Existing emotion_state.json remains compatible (timestamp + baseline preserved)"
+      warn "  • First wake-up after upgrade may show a one-time JSON-shape change in agent output"
+    fi
+  elif [[ -n "$NEW_VERSION" ]]; then
+    info "New version: $NEW_VERSION  (installed version unknown — pre-versioned install)"
+  fi
+
   if [[ "$DRY_RUN" == true ]]; then
     info "Dry run: would remove previous SentiCore block and reinstall"
   else
@@ -195,6 +215,8 @@ if [[ -f "$SOUL_FILE" ]] && grep -q "SentiCore" "$SOUL_FILE"; then
       exit 0
     fi
   fi
+elif [[ -n "$NEW_VERSION" ]]; then
+  info "Installing SentiCore $NEW_VERSION (fresh)"
 fi
 
 # ─── Dry run summary ─────────────────────────────────
